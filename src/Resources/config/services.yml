@@ -1,4 +1,12 @@
 services:
+    # plugin service
+    translation_plugin_service:
+        class: Acme\SyliusTranslationPlugin\Service\TranslationPlugin
+        calls:
+            - [setContainer, ['@service_container']]
+            - [init]
+
+    # inject twig templates in admin section (sonata block event)
     app.block_event_listener.sylius.admin.layout.sidebar_down:
         class: Sylius\Bundle\UiBundle\Block\BlockEventListener
         arguments:

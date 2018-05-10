@@ -1,4 +1,0 @@
-sylius:
-    form:
-        currency:
-            base: trans

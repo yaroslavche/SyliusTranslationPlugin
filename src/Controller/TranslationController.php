@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Acme\SyliusTranslationPlugin\Controller;
 
+use Acme\SyliusTranslationPlugin\Service\LocaleTranslator;
+
 use Sylius\Component\Locale\Model\Locale;
 use Sylius\Component\Locale\Model\Channel;
 use Sylius\Component\Core\Dashboard\DashboardStatisticsProvider;
@@ -34,35 +36,19 @@ final class TranslationController extends Controller
      */
     public function translationAction(?string $localeCode): Response
     {
-        $this->setSelectedLocale($localeCode);
+        $translationPlugin = $this->get('translation_plugin_service');
+        $translationPlugin->setLocale($localeCode);
+        $translationPlugin->writeTranslations();
         // $faker = \Faker\Factory::create($this->selectedLocale->getCode());
         // for ($entries = 0; $entries < 30; $entries++) {
         //     $this->addMessage(sprintf('namespace_%d.subnamespace_%d', $faker->randomDigitNotNull(), $faker->randomDigitNotNull()), $faker->sentence(), $this->selectedLocale);
         // }
         return $this->render('@AcmeSyliusTranslationPlugin/translation.html.twig', [
-            'locale' => $this->selectedLocale,
-            'messages' => $this->getMessages($this->selectedLocale),
-            'locales' => $this->getSyliusAvailableLocales(),
+            // 'plugin' => $translationPlugin ??
+            'locale' => $translationPlugin->getLocale(),
+            'messages' => $translationPlugin->getMessages(),
+            'locales' => $translationPlugin->getSyliusAvailableLocales(),
         ]);
-    }
-
-    private function setSelectedLocale(?string $localeCode)
-    {
-        if (is_null($localeCode)) {
-            $this->selectedLocale = $this->getSyliusDefaultLocale();
-        } else {
-            $locale = $this->get('sylius.repository.locale')->findOneBy(['code' => $localeCode]);
-            if ($locale instanceof Locale) {
-                $this->selectedLocale = $locale;
-            } else {
-                $availableLocales = $this->getSyliusAvailableLocales();
-                $localeCodesList = [];
-                foreach ($availableLocales as $locale) {
-                    $localeCodesList[] = sprintf('"%s"', $locale->getCode());
-                }
-                throw new \Exception(sprintf('Unsupported locale "%s". Available locales: %s', $localeCode, implode(', ', $localeCodesList)));
-            }
-        }
     }
 
     private function getSyliusDefaultLocale()
