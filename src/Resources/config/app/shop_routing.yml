@@ -1,0 +1,5 @@
+yaroslavche_sylius_translation_plugin_translation_locale:
+    path: /admin/translation/{localeCode}
+    defaults:
+        _controller: AcmeSyliusTranslationPlugin:Translation:translation
+        localeCode: '%locale%'

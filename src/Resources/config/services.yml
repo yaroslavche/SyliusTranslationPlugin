@@ -1,0 +1,7 @@
+services:
+    app.block_event_listener.sylius.admin.layout.sidebar_down:
+        class: Sylius\Bundle\UiBundle\Block\BlockEventListener
+        arguments:
+            - '@@AcmeSyliusTranslationPlugin/admin/sidebar_down.html.twig'
+        tags:
+            - { name: kernel.event_listener, event: sonata.block.event.sylius.admin.layout.sidebar_down, method: onBlockEvent }
