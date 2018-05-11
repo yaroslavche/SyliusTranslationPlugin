@@ -107,6 +107,12 @@ class TranslationPlugin implements ContainerAwareInterface
         $this->translator->setLocale($this->locale->getCode());
         $this->messageCatalogue = $this->translator->getCatalogue($this->locale->getCode());
 
+        $this->customMessageCatalogue = $this->loadCustomLocaleMessages();
+        // $this->messageCatalogue->replace($this->customMessageCatalogue->all());
+    }
+
+    private function loadCustomLocaleMessages()
+    {
         $this->customMessageCatalogue = new MessageCatalogue($this->locale->getCode());
         $kernelRootDir = $this->container->getParameter('kernel.root_dir');
         // TODO: '@Acme.../Resources/' ?
@@ -128,13 +134,14 @@ class TranslationPlugin implements ContainerAwareInterface
                     throw new \RuntimeException(sprintf('Unable to find Symfony Translation loader for format "%s"', $format));
                 }
                 $loader = $this->container->get($loaderServiceAlias);
-                $customMessageCatalogue = $loader->load($translationFile->getRealPath(), $localeCode);
+                $customMessageCatalogue = $loader->load($translationFile->getRealPath(), $localeCode, $domain);
                 if (null !== $customMessageCatalogue) {
                     $this->customMessageCatalogue->addCatalogue($customMessageCatalogue);
+                    $customMessageCatalogue = null;
                 }
             }
         }
-        // $this->messageCatalogue->addFallbackCatalogue($this->customMessageCatalogue);
+        return $this->customMessageCatalogue;
     }
 
     /**
@@ -199,7 +206,7 @@ class TranslationPlugin implements ContainerAwareInterface
                 ['category' => 'state', 'content' => 'new'],
                 ['category' => 'approved', 'content' => 'false'],
                 ['category' => 'section', 'content' => $domain ?? 'messages', 'priority' => '1']
-            ]]);
+            ]], $domain);
         }
     }
 
@@ -225,10 +232,12 @@ class TranslationPlugin implements ContainerAwareInterface
 
         $translationCacheDir = sprintf('%s/translations', $this->container->getParameter('kernel.cache_dir'));
         $finder = new Finder();
-        $this->filesystem->mkdir($translationCacheDir);
-        $files = $finder->files()->name('/[a-z]+\.[a-z]{2}\.[a-z]+/')->in($translationCacheDir);
+        // TODO: filesystem create in private getter if null
+        $filesystem = new Filesystem();
+        $filesystem->mkdir($translationCacheDir);
+        $files = $finder->files()->name('*.' . $this->locale->getCode() . '.*')->in($translationCacheDir);
         foreach ($files as $file) {
-            $this->filesystem->remove($file);
+            $filesystem->remove($file);
         }
         if ($this->translator instanceof WarmableInterface) {
             $this->translator->warmUp($translationCacheDir);
@@ -264,9 +273,9 @@ class TranslationPlugin implements ContainerAwareInterface
     {
         $catalogue = $this->messageCatalogue;
         $messages = $catalogue->all($domain);
-        while ($catalogue = $catalogue->getFallbackCatalogue()) {
-            $messages = array_replace_recursive($catalogue->all($domain), $messages);
-        }
+        // while ($catalogue = $catalogue->getFallbackCatalogue()) {
+        //     $messages = array_replace_recursive($catalogue->all($domain), $messages);
+        // }
         return $messages;
     }
 
