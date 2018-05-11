@@ -30,13 +30,13 @@ final class TranslationController extends Controller
      */
     public function setMessageAction(Request $request) : Response
     {
-        $locale = $request->request->get('locale');
+        $localeCode = $request->request->get('localeCode');
         $domain = $request->request->get('domain');
         $messageDomain = $request->request->get('messageDomain');
         $translation = $request->request->get('translation');
-        if (!is_null($locale) && !is_null($domain) && !is_null($messageDomain) && !is_null($translation)) {
+        if (!is_null($localeCode) && !is_null($domain) && !is_null($messageDomain) && !is_null($translation)) {
             $translationPlugin = $this->get('translation_plugin_service');
-            $translationPlugin->setLocaleByCode($locale);
+            $translationPlugin->setLocaleByCode($localeCode);
             $translationPlugin->setDomainMessage($domain, $messageDomain, $translation);
             $translationPlugin->writeTranslations();
             return new Response(json_encode(['status' => 'success']));

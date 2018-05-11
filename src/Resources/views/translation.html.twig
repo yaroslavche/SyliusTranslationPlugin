@@ -11,6 +11,9 @@
 {% block stylesheets %}
     {% include 'SyliusUiBundle::_stylesheets.html.twig' with {'path': 'assets/admin/css/style.css'} %}
     {{ sonata_block_render_event('sylius.admin.layout.stylesheets') }}
+    <style>
+        .hidden { display:none !important; }
+    </style>
 {% endblock %}
 
 {% block flash_messages %}
@@ -56,6 +59,38 @@
     {% include 'SyliusUiBundle::_javascripts.html.twig' with {'path': 'assets/admin/js/app.js'} %}
     <script src="{{ asset('bundles/acmesyliustranslationplugin/translation.js') }}"></script>
     {{ sonata_block_render_event('sylius.admin.layout.javascripts') }}
+
+
+    <script>
+        function stpEditMessage(selector)
+        {
+            const
+                container = jQuery(selector),
+                localeCode = container.find('form input[name="localeCode"]').val(),
+                domain = container.find('form input[name="domain"]').val(),
+                messageDomain = container.find('form input[name="messageDomain"]').val(),
+                translation = container.find('form input[name="translation"]').val();
+            if(newTranslation = prompt(messageDomain + '\n(' + localeCode + ')', ))
+            {
+                jQuery.post(
+                    '/admin/translation/set',
+                    {
+                        'localeCode': localeCode,
+                        'domain': domain,
+                        'messageDomain': messageDomain,
+                        'translation': newTranslation
+                    }, function(response) {
+                        if(response.status == 'success')
+                        {
+                            container.find('form input[name="translation"]').val(newTranslation);
+                            container.find('span.translation').text(newTranslation);
+                            // show notification
+                        }
+                        else alert('something wrong');
+                    }, 'json');
+            }
+        }
+    </script>
 {% endblock %}
 
 
@@ -113,15 +148,30 @@
         <tbody>
             {% set ajaxPath = path('sylius_translation_plugin_translation_set_message') %}
             {% for messageDomain, translation in messages %}
+                {% set messageSelectorSuffix = '%s_%s'|format(domain, loop.index) %}
             <tr>
                 <td>{{ messageDomain }}</td>
                 <td>
-                    <span style="display:none;">{{ messageDomain|trans }}</span>
-                    <span>{{ translation }}</span>
-                    {# TODO: hardcoded #}
-                    <a class="ui labeled icon button edit topbar_right" href="#" onclick="if(translation = prompt('{{ messageDomain }}')) jQuery.post('{{ ajaxPath }}', { 'locale': '{{ currentLocale.code }}', 'domain': '{{ domain }}', 'messageDomain': '{{ messageDomain }}', 'translation': translation }, function(response) { location.reload(); }); return false;">
-                        <i class="icon edit"></i> Edit
-                    </a>
+                    <div id="message_container_{{ messageSelectorSuffix }}">
+                        {# TODO: hardcoded #}
+                        <form class="hidden" method="POST">
+                            <input type="hidden" value="{{ currentLocale.code }}" name="localeCode" />
+                            <input type="hidden" value="{{ domain }}" name="domain" />
+                            <input type="hidden" value="{{ messageDomain }}" name="messageDomain" />
+                            <input type="hidden" value="{{ translation }}" name="translation" />
+                        </form>
+                        <span class="translation">{{ translation }}</span>
+                        <a class="ui labeled icon button edit right" href="#" onclick="stpEditMessage('#message_container_{{ messageSelectorSuffix }}')">
+                            <i class="icon edit"></i> Edit
+                        </a>
+                        <input type="text" class="hidden" class="newTranslation">
+                        <a class="ui labeled icon button edit right hidden" href="#" onclick="stpConfirmEdit('#message_container_{{ messageSelectorSuffix }}')">
+                            <i class="icon edit"></i> Edit
+                        </a>
+                        <a class="ui labeled icon button edit right hidden" href="#" onclick="stpCancelEdit('#message_container_{{ messageSelectorSuffix }}')">
+                            <i class="icon edit"></i> Edit
+                        </a>
+                    </div>
                 </td>
             </tr>
             {% endfor %}
