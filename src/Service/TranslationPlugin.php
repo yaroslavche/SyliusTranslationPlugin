@@ -12,6 +12,9 @@ use Symfony\Component\Translation\TranslatorInterface;
 use Symfony\Component\Translation\MessageCatalogue;
 use Symfony\Component\Translation\Dumper\XliffFileDumper;
 use Symfony\Component\Translation\Writer\TranslationWriter;
+use Symfony\Component\Finder\Finder;
+use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\Filesystem\Exception\IOExceptionInterface;
 
 class TranslationPlugin implements ContainerAwareInterface
 {
@@ -47,6 +50,11 @@ class TranslationPlugin implements ContainerAwareInterface
      */
     private $customMessageCatalogue;
 
+    /**
+     * @var array $domains
+     */
+    private $domains;
+
 
 
     /**
@@ -65,6 +73,9 @@ class TranslationPlugin implements ContainerAwareInterface
             $translator = $this->container->get('translator');
             $this->translator = clone $translator;
         } finally {
+            if (empty($syliusDefaultLocaleCode)) {
+                throw new \Exception('Sylius default locale is empty!');
+            }
             if (empty($this->syliusAvailableLocales)) {
                 throw new \Exception('Sylius available locales is empty!');
             }
@@ -85,17 +96,58 @@ class TranslationPlugin implements ContainerAwareInterface
     }
 
     /**
-     * set locale for translations
+     * @param Locale|null $locale
+     */
+    public function setLocale(?Locale $locale = null)
+    {
+        if (is_null($locale)) {
+            $locale = $this->getSyliusDefaultLocale();
+        }
+        $this->locale = $locale;
+        $this->translator->setLocale($this->locale->getCode());
+        $this->messageCatalogue = $this->translator->getCatalogue($this->locale->getCode());
+
+        $this->customMessageCatalogue = new MessageCatalogue($this->locale->getCode());
+        $kernelRootDir = $this->container->getParameter('kernel.root_dir');
+        // TODO: '@Acme.../Resources/' ?
+        $customMessagesPath = sprintf('%s/Resources/translations', $kernelRootDir);
+        $finder = new Finder();
+        $filesystem = new Filesystem();
+        $format = 'xliff';
+        if ($filesystem->exists($customMessagesPath)) {
+            $translationFiles = $finder->files()->name('/[a-z]+\.[a-z]{2}\.[a-z]+/')->in($customMessagesPath);
+            $customMessageCatalogue = null;
+            foreach ($translationFiles as $translationFile) {
+                list($domain, $localeCode) = explode('.', $translationFile->getFilename());
+                if ($localeCode !== $this->locale->getCode()) {
+                    continue;
+                }
+
+                $loaderServiceAlias = sprintf('translation.loader.%s', $format);
+                if (!$this->container->has($loaderServiceAlias)) {
+                    throw new \RuntimeException(sprintf('Unable to find Symfony Translation loader for format "%s"', $format));
+                }
+                $loader = $this->container->get($loaderServiceAlias);
+                $customMessageCatalogue = $loader->load($translationFile->getRealPath(), $localeCode);
+                if (null !== $customMessageCatalogue) {
+                    $this->customMessageCatalogue->addCatalogue($customMessageCatalogue);
+                }
+            }
+        }
+        // $this->messageCatalogue->addFallbackCatalogue($this->customMessageCatalogue);
+    }
+
+    /**
      * @param string|null $localeCode
      */
-    public function setLocale(?string $localeCode)
+    public function setLocaleByCode(?string $localeCode = null)
     {
         if (is_null($localeCode)) {
-            $this->locale = $this->getSyliusDefaultLocale();
+            $this->setLocale();
         } else {
             $locale = $this->container->get('sylius.repository.locale')->findOneBy(['code' => $localeCode]);
             if ($locale instanceof Locale) {
-                $this->locale = $locale;
+                $this->setLocale($locale);
             } else {
                 $availableLocales = $this->getSyliusAvailableLocales();
                 $localeCodesList = [];
@@ -107,37 +159,48 @@ class TranslationPlugin implements ContainerAwareInterface
                 throw new \Exception(sprintf('Unsupported locale "%s". Available locales: %s', $localeCode, implode(', ', $localeCodesList)));
             }
         }
-        $this->translator->setLocale($this->locale->getCode());
-        $this->messageCatalogue = $this->translator->getCatalogue($this->locale->getCode());
+    }
 
-        // get custom translations
-        // move to method with $domain and $format
-        $format = 'xliff';
-        $loaderServiceAlias = sprintf('translation.loader.%s', $format);
-        if (!$this->container->has($loaderServiceAlias)) {
-            throw new \RuntimeException(sprintf('Unable to find Symfony Translation loader for format "%s"', $format));
+    public function setMessage(string $messageDomain, ?string $message = null)
+    {
+        // TODO: __call. if method exists - check if locale is set. excluding some methods
+        if (null === $this->locale) {
+            throw new \Exception('Use method "setLocale($localeCode = null)" before.');
         }
-        $loader = $this->container->get($loaderServiceAlias);
-        $kernelRootDir = $this->container->getParameter('kernel.root_dir');
-        $customMessagesFilePath = sprintf(
-            '%s/Resources/translations/%s.%s.%s',
-            $kernelRootDir,
-            $domain ?? 'messages',
-            $this->locale->getCode(),
-            $format
-        );
-        $this->customMessageCatalogue = $loader->load($customMessagesFilePath, $this->locale->getCode());
-        dump($this->customMessageCatalogue);
+        $domain = null;
+        // TODO: check $messageDomain?
+        $messageDomains = explode('.', $messageDomain);
+        $domains = $this->getDomains();
+        if (count($messageDomains) > 1 && in_array($messageDomains[0], $domains)) {
+            $domain = $messageDomains[0];
+            $messageDomain = implode('.', array_slice($messageDomains, 1));
+        }
+        return $this->setDomainMessage($domain, $messageDomain, $message);
+    }
 
-        // addMessage
-        // $this->messageCatalogue->add([
-        //     'original-content' => 'translated-content',
-        // ]);
-        // $this->messageCatalogue->setMetadata('original-content', ['notes' => [
-        //     ['category' => 'state', 'content' => 'new'],
-        //     ['category' => 'approved', 'content' => 'true'],
-        //     ['category' => 'section', 'content' => 'user login', 'priority' => '1'],
-        // ]]);
+    public function setDomainMessage(?string $domain = null, string $messageDomain, ?string $translation = null)
+    {
+        if (empty($messageDomain)) {
+            throw new \Exception('Message domain must be not empty.');
+        }
+        $translation = $translation ?? '';
+
+        if ($this->customMessageCatalogue->has($messageDomain, $domain)) {
+            $this->customMessageCatalogue->set($messageDomain, $translation, $domain);
+        // TODO: getMetadata and update
+            // $this->customMessageCatalogue->setMetadata($messageDomain, ['notes' => [
+            //     ['category' => 'state', 'content' => 'new'],
+            //     ['category' => 'approved', 'content' => 'false'],
+            //     ['category' => 'section', 'content' => $messageDomain, 'priority' => '1']
+            // ]]);
+        } else {
+            $this->customMessageCatalogue->add([$messageDomain => $translation], $domain);
+            $this->customMessageCatalogue->setMetadata($messageDomain, ['notes' => [
+                ['category' => 'state', 'content' => 'new'],
+                ['category' => 'approved', 'content' => 'false'],
+                ['category' => 'section', 'content' => $domain ?? 'messages', 'priority' => '1']
+            ]]);
+        }
     }
 
     public function writeTranslations(?string $path = null, ?string $format = 'xliff')
@@ -153,10 +216,23 @@ class TranslationPlugin implements ContainerAwareInterface
             throw new \InvalidArgumentException(sprintf('Unable to find Symfony Translation dumper for format "%s"', $format));
         }
         $dumper = $this->container->get($dumperServiceAlias);
+        $dumper->setBackup(false);
         // TODO: static aliases check on init. container->has()
         $writer = $this->container->get('translation.writer');
         $writer->addDumper($format, $dumper);
-        $w = $writer->writeTranslations($this->messageCatalogue, $format, ['path' => $translationsPath]);
+        // TODO: translations path in config
+        $writer->writeTranslations($this->customMessageCatalogue, $format, ['path' => $translationsPath]);
+
+        $translationCacheDir = sprintf('%s/translations', $this->container->getParameter('kernel.cache_dir'));
+        $finder = new Finder();
+        $this->filesystem->mkdir($translationCacheDir);
+        $files = $finder->files()->name('/[a-z]+\.[a-z]{2}\.[a-z]+/')->in($translationCacheDir);
+        foreach ($files as $file) {
+            $this->filesystem->remove($file);
+        }
+        if ($this->translator instanceof WarmableInterface) {
+            $this->translator->warmUp($translationCacheDir);
+        }
     }
 
     /**
@@ -198,5 +274,10 @@ class TranslationPlugin implements ContainerAwareInterface
     {
         $messages = $this->customMessageCatalogue->all($domain);
         return $messages;
+    }
+
+    public function getDomains()
+    {
+        return $this->messageCatalogue->getDomains();
     }
 }

@@ -1,6 +1,12 @@
 {% extends 'SyliusUiBundle:Layout:sidebar.html.twig' %}
 
-{% block title %} | Sylius{% endblock %}
+{% import '@AcmeSyliusTranslationPlugin/macro.html.twig' as pluginMacro %}
+
+{% set locales = plugin.getSyliusAvailableLocales() %}
+{% set currentLocale = plugin.getLocale() %}
+{% set domains = plugin.getDomains() %}
+
+{% block title %}{{ 'Translation'|trans({}, null, currentLocale.code) }} | Sylius{% endblock %}
 
 {% block stylesheets %}
     {% include 'SyliusUiBundle::_stylesheets.html.twig' with {'path': 'assets/admin/css/style.css'} %}
@@ -52,38 +58,77 @@
     {{ sonata_block_render_event('sylius.admin.layout.javascripts') }}
 {% endblock %}
 
+
+
 {% block content %}
-{#
-{{ 'sylius.form.currency.base'|trans({}, 'messages', locale.code) }}
-#}
 {% if locales|length > 1 %}
-    <select id="acme_sylius_translation_plugin_locale">
-    {% for localeItem in locales %}
-        <option value="{{ localeItem.code }}" {{ localeItem.code == locale.code ? ' selected="selected"' : '' }}>{{ localeItem.name }}</option>
+<div class="ui segment overflow-x-auto">
+    {% for locale in locales %}
+        {{ pluginMacro.localeButton(locale, currentLocale) }}
+    {% endfor %}
+</div>
+{% endif %}
+
+{% if domains|length > 0 %}
+<div class="ui segment overflow-x-auto">
+    {% for domain in domains %}
+        {{ pluginMacro.domainButton(domain, currentLocale) }}
+    {% endfor %}
+</div>
+<!--
+<div class="ui segment overflow-x-auto">
+    <select id="domainFilter">
+        <option value="">All</option>
+    {% for domain in domains %}
+        <option value="{{ domain }}">{{ domain }}</option>
     {% endfor %}
     </select>
+    <input type="text" id="messageFilter">
+    <label><input type="checkbox"> Include domain names</label>
+</div>
+-->
 {% endif %}
 
 <div class="ui segment overflow-x-auto">
-    {% if messages|length > 0 %}
-        <table class="ui sortable stackable celled table">
-            <thead>
-            <tr>
-                <th>Scope</th>
-                <th>Domain</th>
-                <th>Message</th>
-            </tr>
-            </thead>
-            <tbody>
-                {% for category, domainMessages in messages %}
-                    {% for domain, message in domainMessages %}
-                        <tr><td>{{ category }}</td><td>{{ domain }}</td><td>{{ message }}</td></tr>
-                    {% endfor %}
-                {% endfor %}
-            </tbody>
-        </table>
-    {% else %}
-        {{ messages.info('sylius.ui.no_results_to_display') }}
+    {% set selectedDomain = null %}
+    {% if app.request.query.get('domain') in domains %}
+        {% set selectedDomain = app.request.query.get('domain') %}
     {% endif %}
+    {% for domain in domains %}
+        {% set showDomainMessages = true %}
+        {% if selectedDomain != null and domain != selectedDomain %}
+            {% set showDomainMessages = false %}
+        {% endif %}
+        {% if showDomainMessages %}
+            {% set messages = plugin.getMessages(domain) %}
+            {% if messages|length > 0 %}
+    <h3>{{ domain }}</h3>
+    <table class="ui sortable stackable celled table">
+        <thead>
+        <tr>
+            <th>Domain</th>
+            <th>Message</th>
+        </tr>
+        </thead>
+        <tbody>
+            {% set ajaxPath = path('sylius_translation_plugin_translation_set_message') %}
+            {% for messageDomain, translation in messages %}
+            <tr>
+                <td>{{ messageDomain }}</td>
+                <td>
+                    <span style="display:none;">{{ messageDomain|trans }}</span>
+                    <span>{{ translation }}</span>
+                    {# TODO: hardcoded #}
+                    <a class="ui labeled icon button edit topbar_right" href="#" onclick="if(translation = prompt('{{ messageDomain }}')) jQuery.post('{{ ajaxPath }}', { 'locale': '{{ currentLocale.code }}', 'domain': '{{ domain }}', 'messageDomain': '{{ messageDomain }}', 'translation': translation }, function(response) { console.log(response); }); return false;">
+                        <i class="icon edit"></i> Edit
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+            {% endif %}
+        {% endif %}
+    {% endfor %}
 </div>
 {% endblock %}

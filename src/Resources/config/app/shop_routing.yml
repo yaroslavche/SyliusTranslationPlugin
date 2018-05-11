@@ -1,5 +1,12 @@
-yaroslavche_sylius_translation_plugin_translation_locale:
+sylius_translation_plugin_translation_locale:
     path: /admin/translation/{localeCode}
     defaults:
         _controller: AcmeSyliusTranslationPlugin:Translation:translation
         localeCode: '%locale%'
+    requirements:
+        localeCode: "^(?!set|get).+"
+
+sylius_translation_plugin_translation_set_message:
+    path: /admin/translation/set
+    defaults:
+        _controller: AcmeSyliusTranslationPlugin:Translation:setMessage
