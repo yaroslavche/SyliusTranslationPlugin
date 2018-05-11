@@ -1,5 +1,6 @@
 ## Installation
 
+Download and install
 ```bash
 $ composer require yaroslavche/sylius-translation-plugin
 $ yarn install
@@ -7,17 +8,33 @@ $ yarn run gulp
 $ bin/console assets:install web -e dev
 ```
 
-## Test
+register bundle
+```php
+# app/AppKernel.php
+
+// ...
+public function registerBundles(): array
+{
+    return array_merge(parent::registerBundles(), [
+        // ...
+        new \Acme\SyliusTranslationPlugin\AcmeSyliusTranslationPlugin(),
+    ]);
+}
+```
+
+add routing
+```yaml
+# app/config/routing.yml
+
+acme_sylius_example_shop:
+    resource: "@AcmeSyliusTranslationPlugin/Resources/config/app/shop_routing.yml"
+```
+
+and finally
 ```bash
-$ (cd tests/Application && yarn install)
-$ (cd tests/Application && yarn run gulp)
-$ (cd tests/Application && bin/console assets:install web -e test)
-
-$ (cd tests/Application && bin/console doctrine:database:create -e test)
-$ (cd tests/Application && bin/console doctrine:schema:create -e test)
-
-$ (cd tests/Application && bin/console sylius:fixtures:load -e dev)
-$ (cd tests/Application && bin/console server:run -d web -e dev)
+$ bin/console cache:clear
+$ bin/console cache:warmup
+$ bin/console server:run
 ```
 Go to http://localhost:8000/admin/translation
 
