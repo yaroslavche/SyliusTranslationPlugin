@@ -6,10 +6,8 @@ services:
             - [setContainer, ['@service_container']]
             - [init]
 
-    # inject twig templates in admin section (sonata block event)
-    app.block_event_listener.sylius.admin.layout.sidebar_down:
-        class: Sylius\Bundle\UiBundle\Block\BlockEventListener
-        arguments:
-            - '@@AcmeSyliusTranslationPlugin/admin/sidebar_down.html.twig'
+    # add menu via listener
+    app.listener.admin.menu_builder:
+        class: Acme\SyliusTranslationPlugin\Listener\AdminMenuListener
         tags:
-            - { name: kernel.event_listener, event: sonata.block.event.sylius.admin.layout.sidebar_down, method: onBlockEvent }
+            - { name: kernel.event_listener, event: sylius.menu.admin.main, method: addAdminMenuItems }

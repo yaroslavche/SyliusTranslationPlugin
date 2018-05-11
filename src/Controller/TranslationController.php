@@ -18,6 +18,7 @@ final class TranslationController extends Controller
     {
         $translationPlugin = $this->get('translation_plugin_service');
         $translationPlugin->setLocaleByCode($localeCode);
+        // $translationPlugin->checkTranslations();
 
         return $this->render('@AcmeSyliusTranslationPlugin/translation.html.twig', [
             'plugin' => $translationPlugin

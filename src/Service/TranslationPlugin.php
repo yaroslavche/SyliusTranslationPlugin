@@ -5,12 +5,10 @@ declare(strict_types=1);
 namespace Acme\SyliusTranslationPlugin\Service;
 
 use Sylius\Component\Locale\Model\Locale;
-use Sylius\Bundle\ThemeBundle\Translation\ThemeAwareTranslator;
 
 use Symfony\Component\DependencyInjection\ContainerAwareInterface;
 use Symfony\Component\Translation\TranslatorInterface;
 use Symfony\Component\Translation\MessageCatalogue;
-use Symfony\Component\Translation\Dumper\XliffFileDumper;
 use Symfony\Component\Translation\Writer\TranslationWriter;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Filesystem\Filesystem;
@@ -288,5 +286,11 @@ class TranslationPlugin implements ContainerAwareInterface
     public function getDomains()
     {
         return $this->messageCatalogue->getDomains();
+    }
+
+    public function checkTranslations()
+    {
+        $checker = new TranslationChecker($this);
+        $checker->check();
     }
 }

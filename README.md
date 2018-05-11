@@ -26,8 +26,8 @@ add routing
 ```yaml
 # app/config/routing.yml
 
-acme_sylius_example_shop:
-    resource: "@AcmeSyliusTranslationPlugin/Resources/config/app/shop_routing.yml"
+acme_sylius_translation_plugin:
+    resource: "@AcmeSyliusTranslationPlugin/Resources/config/app/routing.yml"
 ```
 
 and finally
