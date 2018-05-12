@@ -21,6 +21,14 @@ public function registerBundles(): array
     ]);
 }
 ```
+import services
+```yaml
+# app/config/config.yml
+
+imports:
+    # ...
+    - { resource: "@AcmeSyliusTranslationPlugin/Resources/config/services.yml" }
+```
 
 add routing
 ```yaml

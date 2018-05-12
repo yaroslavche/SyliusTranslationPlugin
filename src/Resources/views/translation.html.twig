@@ -4,7 +4,8 @@
 
 {% set locales = plugin.getSyliusAvailableLocales() %}
 {% set currentLocale = plugin.getLocale() %}
-{% set domains = plugin.getDomains() %}
+{% set domains = plugin.getMessageCatalogue().getDomains() %}
+{% set customDomains = plugin.getCustomMessageCatalogue().getDomains() %}
 
 {% block title %}{{ 'Translation'|trans({}, null, currentLocale.code) }} | Sylius{% endblock %}
 
@@ -135,7 +136,7 @@
             {% set showDomainMessages = false %}
         {% endif %}
         {% if showDomainMessages %}
-            {% set messages = plugin.getMessages(domain) %}
+            {% set messages = plugin.getMessageCatalogue.all(domain) %}
             {% if messages|length > 0 %}
     <h3>{{ domain }}</h3>
     <table class="ui sortable stackable celled table">

@@ -267,25 +267,20 @@ class TranslationPlugin implements ContainerAwareInterface
         return $this->syliusAvailableLocales;
     }
 
-    public function getMessages(?string $domain = null) : array
+    public function getMessageCatalogue() : MessageCatalogue
     {
-        $catalogue = $this->messageCatalogue;
-        $messages = $catalogue->all($domain);
+        return $this->messageCatalogue;
+        // $catalogue = $this->messageCatalogue;
+        // $messages = $catalogue->all($domain);
         // while ($catalogue = $catalogue->getFallbackCatalogue()) {
         //     $messages = array_replace_recursive($catalogue->all($domain), $messages);
         // }
-        return $messages;
+        // return $messages;
     }
 
-    public function getCustomMessages(?string $domain = null)
+    public function getCustomMessageCatalogue() : MessageCatalogue
     {
-        $messages = $this->customMessageCatalogue->all($domain);
-        return $messages;
-    }
-
-    public function getDomains()
-    {
-        return $this->messageCatalogue->getDomains();
+        return  $this->customMessageCatalogue;
     }
 
     public function checkTranslations()
