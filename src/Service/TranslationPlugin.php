@@ -73,8 +73,6 @@ class TranslationPlugin implements ContainerAwareInterface
             $this->syliusAvailableLocales = $this->container->get('sylius.repository.locale')->findAll();
             $translator = $this->container->get('translator');
             $this->translator = clone $translator;
-            dump($this->translator);
-            die();
         } finally {
             if (empty($syliusDefaultLocaleCode)) {
                 throw new \Exception('Sylius default locale is empty!');
