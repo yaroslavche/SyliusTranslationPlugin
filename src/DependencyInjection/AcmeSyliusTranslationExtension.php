@@ -16,7 +16,11 @@ final class AcmeSyliusTranslationExtension extends Extension
      */
     public function load(array $config, ContainerBuilder $container): void
     {
-        $config = $this->processConfiguration($this->getConfiguration([], $container), $config);
+        $configuration = $this->getConfiguration([], $container);
+        if (null === $configuration) {
+            return;
+        }
+        $config = $this->processConfiguration($configuration, $config);
         $loader = new XmlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
     }
 }

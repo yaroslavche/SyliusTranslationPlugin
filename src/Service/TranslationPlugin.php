@@ -7,12 +7,14 @@ namespace Acme\SyliusTranslationPlugin\Service;
 use Sylius\Component\Locale\Model\Locale;
 
 use Symfony\Component\DependencyInjection\ContainerAwareInterface;
-use Symfony\Component\Translation\TranslatorInterface;
+use Symfony\Component\Translation\LoggingTranslator;
 use Symfony\Component\Translation\MessageCatalogue;
+use Symfony\Component\Translation\MessageCatalogueInterface;
 use Symfony\Component\Translation\Writer\TranslationWriter;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Filesystem\Exception\IOExceptionInterface;
+use Symfony\Component\HttpKernel\CacheWarmer\WarmableInterface;
 
 class TranslationPlugin implements ContainerAwareInterface
 {
@@ -34,7 +36,7 @@ class TranslationPlugin implements ContainerAwareInterface
     private $syliusAvailableLocales;
 
     /**
-     * @var TranslatorInterface|null $translator
+     * @var LoggingTranslator|null $translator
      */
     private $translator;
 
@@ -65,11 +67,14 @@ class TranslationPlugin implements ContainerAwareInterface
         if (is_null($this->container)) {
             throw new \Exception('Container is null!');
         }
+        $syliusDefaultLocaleCode = null;
         try {
             $syliusDefaultLocaleCode = $this->container->get('sylius.locale_provider')->getDefaultLocaleCode();
             $this->syliusAvailableLocales = $this->container->get('sylius.repository.locale')->findAll();
             $translator = $this->container->get('translator');
             $this->translator = clone $translator;
+            dump($this->translator);
+            die();
         } finally {
             if (empty($syliusDefaultLocaleCode)) {
                 throw new \Exception('Sylius default locale is empty!');
@@ -84,6 +89,7 @@ class TranslationPlugin implements ContainerAwareInterface
             //     ));
             // }
         }
+        $this->syliusAvailableLocales = $this->syliusAvailableLocales ?? [];
         foreach ($this->syliusAvailableLocales as $locale) {
             $localeCode = $locale->getCode();
             if ($localeCode === $syliusDefaultLocaleCode) {
@@ -102,8 +108,16 @@ class TranslationPlugin implements ContainerAwareInterface
             $locale = $this->getSyliusDefaultLocale();
         }
         $this->locale = $locale;
-        $this->translator->setLocale($this->locale->getCode());
-        $this->messageCatalogue = $this->translator->getCatalogue($this->locale->getCode());
+        if (!$this->translator) {
+            throw new \RuntimeException('Translator not set');
+        }
+
+        $this->translator->setLocale($this->getLocaleCode());
+        /**
+         * @var MessageCatalogue $messageCatalogue
+         */
+        $messageCatalogue = $this->translator->getCatalogue($this->getLocaleCode());
+        $this->messageCatalogue = $messageCatalogue;
 
         $this->customMessageCatalogue = $this->loadCustomLocaleMessages();
         // $this->messageCatalogue->replace($this->customMessageCatalogue->all());
@@ -111,7 +125,7 @@ class TranslationPlugin implements ContainerAwareInterface
 
     private function loadCustomLocaleMessages()
     {
-        $this->customMessageCatalogue = new MessageCatalogue($this->locale->getCode());
+        $this->customMessageCatalogue = new MessageCatalogue($this->getLocaleCode());
         $kernelRootDir = $this->container->getParameter('kernel.root_dir');
         // TODO: '@Acme.../Resources/' ?
         $customMessagesPath = sprintf('%s/Resources/translations', $kernelRootDir);
@@ -123,7 +137,7 @@ class TranslationPlugin implements ContainerAwareInterface
             $customMessageCatalogue = null;
             foreach ($translationFiles as $translationFile) {
                 list($domain, $localeCode) = explode('.', $translationFile->getFilename());
-                if ($localeCode !== $this->locale->getCode()) {
+                if ($localeCode !== $this->getLocaleCode()) {
                     continue;
                 }
 
@@ -156,7 +170,7 @@ class TranslationPlugin implements ContainerAwareInterface
             } else {
                 $availableLocales = $this->getSyliusAvailableLocales();
                 $localeCodesList = [];
-                if (!is_null($availableLocales)) {
+                if ($availableLocales) {
                     foreach ($availableLocales as $locale) {
                         $localeCodesList[] = sprintf('"%s"', $locale->getCode());
                     }
@@ -168,14 +182,10 @@ class TranslationPlugin implements ContainerAwareInterface
 
     public function setMessage(string $messageDomain, ?string $message = null)
     {
-        // TODO: __call. if method exists - check if locale is set. excluding some methods
-        if (null === $this->locale) {
-            throw new \Exception('Use method "setLocale($localeCode = null)" before.');
-        }
         $domain = null;
         // TODO: check $messageDomain?
         $messageDomains = explode('.', $messageDomain);
-        $domains = $this->getDomains();
+        $domains = $this->messageCatalogue->getDomains();
         if (count($messageDomains) > 1 && in_array($messageDomains[0], $domains)) {
             $domain = $messageDomains[0];
             $messageDomain = implode('.', array_slice($messageDomains, 1));
@@ -183,7 +193,7 @@ class TranslationPlugin implements ContainerAwareInterface
         return $this->setDomainMessage($domain, $messageDomain, $message);
     }
 
-    public function setDomainMessage(?string $domain = null, string $messageDomain, ?string $translation = null)
+    public function setDomainMessage(string $domain = 'messages', string $messageDomain, ?string $translation = null)
     {
         if (empty($messageDomain)) {
             throw new \Exception('Message domain must be not empty.');
@@ -233,9 +243,9 @@ class TranslationPlugin implements ContainerAwareInterface
         // TODO: filesystem create in private getter if null
         $filesystem = new Filesystem();
         $filesystem->mkdir($translationCacheDir);
-        $files = $finder->files()->name('*.' . $this->locale->getCode() . '.*')->in($translationCacheDir);
+        $files = $finder->files()->name('*.' . $this->getLocaleCode() . '.*')->in($translationCacheDir);
         foreach ($files as $file) {
-            $filesystem->remove($file);
+            $filesystem->remove($file->getRealPath());
         }
         if ($this->translator instanceof WarmableInterface) {
             $this->translator->warmUp($translationCacheDir);
@@ -252,6 +262,18 @@ class TranslationPlugin implements ContainerAwareInterface
     }
 
     /**
+     * get current locale code
+     * @return string $locale
+     */
+    public function getLocaleCode() : string
+    {
+        if (!$this->locale) {
+            throw new \RuntimeException('Locale not set');
+        }
+        return $this->locale->getCode() ?? '';
+    }
+
+    /**
      * @return Locale|null $syliusDefaultLocale
      */
     public function getSyliusDefaultLocale() : ?Locale
@@ -264,7 +286,7 @@ class TranslationPlugin implements ContainerAwareInterface
      */
     public function getSyliusAvailableLocales()
     {
-        return $this->syliusAvailableLocales;
+        return $this->syliusAvailableLocales ?? [];
     }
 
     public function getMessageCatalogue() : MessageCatalogue
