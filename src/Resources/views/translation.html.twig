@@ -3,6 +3,7 @@
 {% import '@AcmeSyliusTranslationPlugin/macro.html.twig' as pluginMacro %}
 
 {% set locales = plugin.getSyliusAvailableLocales() %}
+{% set defaultLocale = plugin.getSyliusDefaultLocale() %}
 {% set currentLocale = plugin.getLocale() %}
 {% set domains = plugin.getMessageCatalogue().getDomains() %}
 {% set customDomains = plugin.getCustomMessageCatalogue().getDomains() %}
@@ -55,6 +56,12 @@
 {% endblock %}
 
 {% block content %}
+
+{% set title = currentLocale.name|trans([], null, defaultLocale.code) %}
+{% set description = 'translation_overview'|trans({'%someData%': ''}, 'SyliusTranslationPlugin', defaultLocale.code) %}
+
+{% include 'AcmeSyliusTranslationPlugin::_header.html.twig' with {'title': title, 'description': description, 'icon': 'flag ' ~ currentLocale.code} %}
+
 {% if locales|length > 1 %}
 <div class="ui segment overflow-x-auto">
     {% for locale in locales %}
@@ -105,15 +112,15 @@
         </tr>
         </thead>
         <tbody>
-            {% set ajaxPath = path('sylius_translation_plugin_translation_set_message') %}
             {% for messageDomain, translation in messages %}
+                {% set url = path('sylius_translation_plugin_translation_set_message', {'localeCode': currentLocale.code, 'domain': domain, 'messageDomain': messageDomain }) %}
                 {% set messageSelectorSuffix = '%s_%s'|format(domain, loop.index) %}
             <tr>
                 <td>{{ messageDomain }}</td>
                 <td>
                     <div id="message_container_{{ messageSelectorSuffix }}">
                         {# TODO: hardcoded #}
-                        <form class="hidden" method="POST">
+                        <form method="POST" action="{{ url }}" class="hidden" method="POST">
                             <input type="hidden" value="{{ currentLocale.code }}" name="localeCode" />
                             <input type="hidden" value="{{ domain }}" name="domain" />
                             <input type="hidden" value="{{ messageDomain }}" name="messageDomain" />

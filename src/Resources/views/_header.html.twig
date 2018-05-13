@@ -1,0 +1,10 @@
+{% import 'SyliusUiBundle:Macro:headers.html.twig' as headers %}
+
+<div class="ui stackable grid">
+    <div class="twelve wide column">
+        {% if icon is not defined %}
+            {% set icon = 'translate' %}
+        {% endif %}
+        {{ headers.default(title, icon, description) }}
+    </div>
+</div>

@@ -1,10 +1,14 @@
+sylius_translation_plugin_dashboard:
+    path: /admin/translation/
+    defaults:
+        _controller: AcmeSyliusTranslationPlugin:Translation:dashboard
+
 sylius_translation_plugin_translation_locale:
     path: /admin/translation/{localeCode}
     defaults:
         _controller: AcmeSyliusTranslationPlugin:Translation:translation
-        localeCode: '%locale%'
     requirements:
-        localeCode: "^(?!set|get).+"
+        localeCode: '^[a-z]{2}(?:_[A-Z]{2})?$'
 
 sylius_translation_plugin_translation_set_message:
     path: /admin/translation/set
