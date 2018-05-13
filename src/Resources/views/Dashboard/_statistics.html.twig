@@ -11,6 +11,11 @@
     {% set totalMessages = checker.getTotalMessagesCount(messageCatalogue) %}
     {% set totalTranslated = checker.getTranslatedMessagesCount(messageCatalogue) %}
     {% set completed = (totalTranslated / totalMessages) * 100 %}
+    {# TODO: hardcoded. get resource paths in checker. search in paths domains.[en_US|en].format #}
+    {% if locale.code == 'en_US' %}
+        {% set totalTranslated = totalMessages %}
+        {% set completed = 100 %}
+    {% endif %}
 
 <div class="ui segment{% if isDefaultLocale %} default{% endif %}{% if isCurrent %} active{% endif %}">
     <div class="ui center aligned four column stackable divided grid">

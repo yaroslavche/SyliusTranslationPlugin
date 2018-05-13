@@ -46,4 +46,5 @@ $ bin/console server:run
 ```
 Go to http://localhost:8000/admin/translation
 
+![v0.0.5](http://i.piccy.info/i9/f0df96b5699736aeeef6aace356aff79/1526183495/138173/1243534/13052018_065113.png)
 ![v0.0.4](http://i.piccy.info/i9/8bb3ff82ad48ad1fbc2f049322477b5a/1526067792/155065/1243534/11052018_224152.png)
