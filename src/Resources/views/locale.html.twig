@@ -1,0 +1,12 @@
+{% extends 'AcmeSyliusTranslationPlugin::layout.html.twig' %}
+
+{% set defaultLocale = plugin.getSyliusDefaultLocale() %}
+
+{% set title = currentLocale.name|trans([], null, defaultLocale.code) %}
+{% set description = 'translation_overview'|trans({'%someData%': ''}, 'SyliusTranslationPlugin', defaultLocale.code) %}
+
+{% block content %}
+
+{% include 'AcmeSyliusTranslationPlugin::_header.html.twig' with {'title': title, 'description': description} %}
+
+{% endblock %}

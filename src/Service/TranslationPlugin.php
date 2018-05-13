@@ -306,12 +306,6 @@ class TranslationPlugin implements ContainerAwareInterface
         return  $this->customMessageCatalogue;
     }
 
-    public function checkTranslations()
-    {
-        $checker = new TranslationChecker($this);
-        $checker->check();
-    }
-
     public function getTranslationChecker(?Locale $locale = null) : TranslationChecker
     {
         if (null === $this->translationChecker) {

@@ -32,7 +32,7 @@
                 domain = container.find('form input[name="domain"]').val(),
                 messageDomain = container.find('form input[name="messageDomain"]').val(),
                 translation = container.find('form input[name="translation"]').val();
-            if(newTranslation = prompt(messageDomain + '\n(' + localeCode + ')', ))
+            if(newTranslation = prompt(messageDomain + '\n(' + localeCode + ')', translation))
             {
                 jQuery.post(
                     '/admin/translation/set',
