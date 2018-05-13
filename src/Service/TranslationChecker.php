@@ -6,54 +6,71 @@ namespace Acme\SyliusTranslationPlugin\Service;
 
 use Acme\SyliusTranslationPlugin\Service\TranslationPlugin;
 
+use Sylius\Component\Locale\Model\Locale;
+
+use Symfony\Component\Translation\MessageCatalogue;
+use Symfony\Component\Intl\Intl;
+
 class TranslationChecker
 {
     private $plugin;
-    private $domains;
-    private $domainMessages;
 
     public function __construct(TranslationPlugin $plugin)
     {
         $this->plugin = $plugin;
-        $this->domains = [];
-        $this->domainMessages = [];
     }
 
-    public function check()
+    public function getFullMessageCatalogue(?Locale $locale = null) : MessageCatalogue
     {
-        // $stat = [
-        //     'count' => count($availableLocales),
-        //     'default' => '',
-        //     'defined' => [
-        //         'domains' => [],
-        //         'messageDomains' => []
-        //     ],
-        //     'missed' => [
-        //         // 'en_US' => ['messages' => ['asd'], 'validators' => ['qwe', 'zxc']]
-        //     ]
-        // ];
-        $catalogues = [];
-
+        if (null === $locale) {
+            $locale = $this->plugin->getSyliusDefaultLocale();
+        }
         $beforeLocale = $this->plugin->getLocale();
-        $availableLocales = $this->plugin->getSyliusAvailableLocales();
-        foreach ($availableLocales as $locale) {
-            $this->plugin->setLocale($locale);
-            $messageCatalogue = $this->plugin->getMessageCatalogue();
-            $customMessageCatalogue = $this->plugin->getCustomMessageCatalogue();
-            $catalogues[$locale->getCode()] = [
-                'main' => $messageCatalogue,
-                'custom' => $customMessageCatalogue
-            ];
-            $this->domains = array_unique(array_merge($this->domains, $messageCatalogue->getDomains(), $customMessageCatalogue->getDomains()));
-            $messages = $messageCatalogue->all();
-            $customMessages = $customMessageCatalogue->all();
-            $allMessages = array_merge($messages, $customMessages);
-            foreach ($allMessages as $domain => $domainMessages) {
-                $this->domainMessages[$domain] = array_keys($domainMessages);
+        $messageCatalogue = new MessageCatalogue($locale->getCode());
+        $localeMessageCatalogue = null;
+        $languages = Intl::getLanguageBundle()->getLanguageNames();
+        foreach ($languages as $localeCode => $languageName) {
+            $currentLocaleMessageCatalogue = $this->plugin->translator->getCatalogue($localeCode);
+            if ($localeCode === $locale->getCode()) {
+                $localeMessageCatalogue = $currentLocaleMessageCatalogue;
+            }
+            $messages = $currentLocaleMessageCatalogue->all();
+            foreach ($messages as $domain => $translations) {
+                $messageCatalogue->add($translations, $domain);
             }
         }
         $this->plugin->setLocale($beforeLocale);
-        dump($this->domainMessages);
-        die();
+        $messages = $messageCatalogue->all();
+        foreach ($messages as $domain => $translations) {
+            foreach ($translations as $key => $translation) {
+                $messageCatalogue->set($key, '', $domain);
+            }
+        }
+        if (null !== $localeMessageCatalogue) {
+            $messageCatalogue->addCatalogue($localeMessageCatalogue);
+        }
+        return $messageCatalogue;
+    }
+
+    public function getTotalMessagesCount(MessageCatalogue $messageCatalogue) : int
+    {
+        $count = 0;
+        foreach ($messageCatalogue->all() as $domain => $translations) {
+            $count += count($translations);
+        }
+        return $count;
+    }
+
+    public function getTranslatedMessagesCount(MessageCatalogue $messageCatalogue) : int
+    {
+        $count = 0;
+        foreach ($messageCatalogue->all() as $domain => $translations) {
+            foreach ($translations as $key => $translation) {
+                if ($translation !== '') {
+                    $count++;
+                }
+            }
+        }
+        return $count;
     }
 }

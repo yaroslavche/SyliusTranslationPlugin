@@ -8,7 +8,7 @@ sylius_translation_plugin_translation_locale:
     defaults:
         _controller: AcmeSyliusTranslationPlugin:Translation:translation
     requirements:
-        localeCode: '^[a-z]{2}(?:_[A-Z]{2})?$'
+        localeCode: '^[a-z]{2,3}(?:_[A-Z]{2})?$'
 
 sylius_translation_plugin_translation_set_message:
     path: /admin/translation/set

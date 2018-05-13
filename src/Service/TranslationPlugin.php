@@ -36,9 +36,10 @@ class TranslationPlugin implements ContainerAwareInterface
     private $syliusAvailableLocales;
 
     /**
+     * // TODO: public -> private
      * @var LoggingTranslator|null $translator
      */
-    private $translator;
+    public $translator;
 
     /**
      * @var MessageCatalogue $messageCatalogue
@@ -54,6 +55,8 @@ class TranslationPlugin implements ContainerAwareInterface
      * @var array $domains
      */
     private $domains;
+
+    private $translationChecker;
 
 
 
@@ -307,5 +310,13 @@ class TranslationPlugin implements ContainerAwareInterface
     {
         $checker = new TranslationChecker($this);
         $checker->check();
+    }
+
+    public function getTranslationChecker(?Locale $locale = null) : TranslationChecker
+    {
+        if (null === $this->translationChecker) {
+            $this->translationChecker = new TranslationChecker($this);
+        }
+        return $this->translationChecker;
     }
 }

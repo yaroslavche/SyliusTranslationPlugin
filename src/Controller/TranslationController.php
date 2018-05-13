@@ -17,8 +17,11 @@ final class TranslationController extends Controller
     {
         $translationPlugin = $this->get('translation_plugin_service');
         $translationPlugin->setLocale();
+        $translationChecker = $translationPlugin->getTranslationChecker();
+
         return $this->render('@AcmeSyliusTranslationPlugin/dashboard.html.twig', [
-            'plugin' => $translationPlugin
+            'plugin' => $translationPlugin,
+            'checker' => $translationChecker
         ]);
     }
 
