@@ -3,14 +3,14 @@ sylius_translation_plugin_dashboard:
     defaults:
         _controller: AcmeSyliusTranslationPlugin:Translation:dashboard
 
+sylius_translation_plugin_translation_set_message:
+    path: /admin/translation/set
+    defaults:
+        _controller: AcmeSyliusTranslationPlugin:Translation:setMessage
+
 sylius_translation_plugin_translation_locale:
     path: /admin/translation/{localeCode}
     defaults:
         _controller: AcmeSyliusTranslationPlugin:Translation:translation
     requirements:
-        localeCode: '^[a-z]{2,3}(?:_[A-Z]{2})?$'
-
-sylius_translation_plugin_translation_set_message:
-    path: /admin/translation/set
-    defaults:
-        _controller: AcmeSyliusTranslationPlugin:Translation:setMessage
+        localeCode: '^(?!set)[a-z]{2,3}(?:_[A-Z]{2})?$'
