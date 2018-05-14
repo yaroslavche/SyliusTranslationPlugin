@@ -1,6 +1,9 @@
 {% extends 'AcmeSyliusTranslationPlugin::layout.html.twig' %}
 
+{# TODO: defaultLocale depends on user _locale #}
 {% set defaultLocale = plugin.getSyliusDefaultLocale() %}
+{% set currentLocale = plugin.getLocale() %}
+{% set fullMessageCatalogue = plugin.getTranslationChecker().getFullMessageCatalogue(currentLocale) %}
 
 {% set title = currentLocale.name|trans([], null, defaultLocale.code) %}
 {% set description = 'translation_overview'|trans({'%someData%': ''}, 'SyliusTranslationPlugin', defaultLocale.code) %}
@@ -8,5 +11,19 @@
 {% block content %}
 
 {% include 'AcmeSyliusTranslationPlugin::_header.html.twig' with {'title': title, 'description': description} %}
-
+<div class="ui two column stackable grid">
+    <div class="four wide column">
+        {% include 'AcmeSyliusTranslationPlugin:Locale:_tree.html.twig' %}
+    </div>
+    <div class="twelve wide column">
+        {% set selectedDomain = null %}
+        {% if app.request.attributes.get('domain') in fullMessageCatalogue.getDomains() %}
+            {% set selectedDomain = app.request.attributes.get('domain') %}
+        {% else %}
+            {% set selectedDomain = 'messages' %}
+        {% endif %}
+        {% set messages = fullMessageCatalogue.all(selectedDomain) %}
+        {% include 'AcmeSyliusTranslationPlugin:Locale:_messages.html.twig' with {'messages': messages, 'localeCode': currentLocale.code, 'domain': selectedDomain} %}
+    </div>
+</div>
 {% endblock %}

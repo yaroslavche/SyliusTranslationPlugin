@@ -104,6 +104,9 @@
             </div>
         </div>
     </div>
+    <div class="ui bottom attached progress" data-percent="{{ '%.2f'|format(progress) }}">
+        <div class="bar"></div>
+    </div>
 </div>
 {% endfor %}
 {% set changeLocale = plugin.setLocale(defaultLocale) %}

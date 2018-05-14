@@ -1,0 +1,28 @@
+{% if messages is defined %}
+<table class="ui celled table">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Translation</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for messageDomain, translation in messages %}
+            {% set translated = translation|length > 0 %}
+        <tr class="{% if translated %}positive{% else %}negative{% endif %}">
+            <td>
+                {% if translated %}
+                <i class="icon checkmark"></i>
+                {% else %}
+                <i class="icon close"></i>
+                {% endif %}
+                {{ messageDomain }}
+            </td>
+            <td>{{ translation }}</td>
+            <td><button class="ui positive basic button" onclick="stpEditMessage('{{ localeCode }}', '{{ domain }}', '{{ messageDomain }}', '{{ translation }}')">Edit</button></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}

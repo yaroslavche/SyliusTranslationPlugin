@@ -29,11 +29,11 @@ final class TranslationController extends Controller
      * @param string|null $localeCode
      * @return Response
      */
-    public function translationAction(?string $localeCode): Response
+    public function localeAction(?string $localeCode): Response
     {
         $translationPlugin = $this->get('translation_plugin_service');
         $translationPlugin->setLocaleByCode($localeCode);
-        return $this->render('@AcmeSyliusTranslationPlugin/translation.html.twig', [
+        return $this->render('@AcmeSyliusTranslationPlugin/locale.html.twig', [
             'plugin' => $translationPlugin
         ]);
     }
