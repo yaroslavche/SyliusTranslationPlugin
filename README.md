@@ -1,11 +1,8 @@
 ## Installation
 
-Download and install
+Download
 ```bash
 $ composer require yaroslavche/sylius-translation-plugin
-$ yarn install
-$ yarn run gulp
-$ bin/console assets:install web -e dev
 ```
 
 register bundle
@@ -40,6 +37,7 @@ acme_sylius_translation_plugin:
 
 and finally
 ```bash
+$ bin/console assets:install web -e dev
 $ bin/console cache:clear
 $ bin/console cache:warmup
 $ bin/console server:run
