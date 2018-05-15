@@ -3,12 +3,17 @@
 {% set defaultLocale = plugin.getSyliusDefaultLocale() %}
 {% set pluginVersion = '0.0.5' %}
 
-{% set title = 'dashboard_title'|trans([], 'SyliusTranslationPlugin', defaultLocale.code) %}
-{% set description = 'dashboard_description'|trans({'%version%': pluginVersion}, 'SyliusTranslationPlugin', defaultLocale.code) %}
+{% set title = 'dashboard_title' | trans([], 'SyliusTranslationPlugin', defaultLocale.code) %}
+{% set description = 'dashboard_description' | trans({
+    '%version%': pluginVersion
+}, 'SyliusTranslationPlugin', defaultLocale.code) %}
 
 {% block content %}
 
-{% include 'AcmeSyliusTranslationPlugin::_header.html.twig' with {'title': title, 'description': description} %}
-{% include 'AcmeSyliusTranslationPlugin:Dashboard:_statistics.html.twig' %}
+    {% include 'AcmeSyliusTranslationPlugin::_header.html.twig' with {
+        'title' : title,
+        'description' : description
+    } %}
+    {% include 'AcmeSyliusTranslationPlugin:Dashboard:_statistics.html.twig' %}
 
 {% endblock %}

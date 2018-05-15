@@ -1,28 +1,42 @@
 {% if messages is defined %}
-<table class="ui celled table">
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Translation</th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
+    <h3 class="ui block header">{{ domain }}</h3>
+    <div class="ui grid">
         {% for messageDomain, translation in messages %}
-            {% set translated = translation|length > 0 %}
-        <tr class="{% if translated %}positive{% else %}negative{% endif %}">
-            <td>
-                {% if translated %}
-                <i class="icon checkmark"></i>
-                {% else %}
-                <i class="icon close"></i>
-                {% endif %}
-                {{ messageDomain }}
-            </td>
-            <td>{{ translation }}</td>
-            <td><button class="ui positive basic button" onclick="stpEditMessage('{{ localeCode }}', '{{ domain }}', '{{ messageDomain }}', '{{ translation }}')">Edit</button></td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
-{% endif %}
+            {% set ifTranslated = translation | length > 0 %}
+            {% set showMessageDomain = messageDomain | truncate(50) %}
+            {% set messageDomainIsTruncated = false %}
+            {% set isCustom = messageDomain in customMessages | keys %}
+            {% if showMessageDomain | length != messageDomain | length %}
+                {% set messageDomainIsTruncated = true %}
+            {% endif %}
+            <div class="row" data-locale-code="{{ currentLocale.code }}" data-domain="{{ domain }}" data-message-domain="{{ messageDomain }}" data-translation="{{ translation }}">
+                <div class="six wide column message-domain">
+                    {% if messageDomainIsTruncated == true %}
+                        <div class="ui big label fluid" data-tooltip="{{ messageDomain }}" data-inverted="" data-position="top center">
+                        {% else %}
+                            <div class="ui big label fluid">
+                            {% endif %}
+                            {% if ifTranslated %}
+                                <i class="icon check circle outline green"></i>
+                                {% if isCustom %}
+                                    <i class="icon cog teal"></i>
+                                {% endif %}
+                            {% else %}
+                                <i class="icon circle outline red"></i>
+                            {% endif %}
+                            {% if messageDomainIsTruncated == true %}
+                                <i class="icon ellipsis horizontal yellow"></i>
+                            {% endif %}
+                            <span class="fluid">{{ showMessageDomain }}</span>
+                        </div>
+                    </div>
+                    <div class="ten wide column">
+                        <div class="ui icon input fluid">
+                            <input class="translation_input" placeholder="{{ translation }}" value="{{ translation }}" type="text">
+                            <i class="edit link icon" onclick="SyliusTranslationPlugin.editTranslation(jQuery(this).parent().parent().parent());"></i>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}

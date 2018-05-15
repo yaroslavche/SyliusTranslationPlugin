@@ -61,52 +61,53 @@
     {% set totalTranslated = checker.getTranslatedMessagesCount(messageCatalogue) %}
     {% set progress = (totalTranslated / totalMessages) * 100 %}
 
-<div class="ui segment{% if isDefaultLocale %} default{% endif %}{% if isCurrent %} active{% endif %}">
-    <div class="ui center aligned four column stackable divided grid">
-        <div class="column">
-            <div class="ui statistic">
-                <div class="value">
-                    <a href="{{ path('sylius_translation_plugin_translation_locale', {'localeCode': locale.code}) }}">{{ locale.code }}</a>
+    <div class="ui segment{% if isDefaultLocale %} default{% endif %}{% if isCurrent %} active{% endif %}">
+        <div class="ui center aligned four column stackable divided grid">
+            <div class="column">
+                <div class="ui statistic">
+                    <div class="value">
+                        <a href="{{ path('sylius_translation_plugin_translation_locale', {'localeCode': locale.code}) }}">{{ locale.code }}</a>
+                    </div>
+                    <div class="label">
+                        {{ locale.name|trans([], null, currentLocale.code) }}
+                        {{ syliusUiFlags.fromLocaleCode(locale.code) }}
+                    </div>
                 </div>
-                <div class="label">
-                    {{ locale.name|trans([], null, currentLocale.code) }}
-                    {{ syliusUiFlags.fromLocaleCode(locale.code) }}
+            </div>
+            <div class="column">
+                <div class="ui statistic">
+                    <div class="value">
+                        {{ totalTranslated }}
+                    </div>
+                    <div class="label">
+                        {{ 'total_translated'|trans([], 'SyliusTranslationPlugin', currentLocale.code) }}
+                    </div>
+                </div>
+            </div>
+            <div class="column">
+                <div class="ui statistic">
+                    <div class="value">
+                        {{ totalMessagesCount - totalTranslated }}
+                    </div>
+                    <div class="label">
+                        {{ 'total_untranslated'|trans([], 'SyliusTranslationPlugin', currentLocale.code) }}
+                    </div>
+                </div>
+            </div>
+            <div class="column">
+                <div class="ui statistic">
+                    <div class="value">
+                        {{ '%.2f'|format(progress) }}%
+                    </div>
+                    <div class="label">
+                        {{ 'progress'|trans([], 'SyliusTranslationPlugin', currentLocale.code) }}
+                    </div>
                 </div>
             </div>
         </div>
-        <div class="column">
-            <div class="ui statistic">
-                <div class="value">
-                    {{ totalTranslated }}
-                </div>
-                <div class="label">
-                    {{ 'total_translated'|trans([], 'SyliusTranslationPlugin', currentLocale.code) }}
-                </div>
-            </div>
-        </div>
-        <div class="column">
-            <div class="ui statistic">
-                <div class="value">
-                    {{ totalMessagesCount - totalTranslated }}
-                </div>
-                <div class="label">
-                    {{ 'total_untranslated'|trans([], 'SyliusTranslationPlugin', currentLocale.code) }}
-                </div>
-            </div>
-        </div>        <div class="column">
-            <div class="ui statistic">
-                <div class="value">
-                    {{ '%.2f'|format(progress) }}%
-                </div>
-                <div class="label">
-                    {{ 'progress'|trans([], 'SyliusTranslationPlugin', currentLocale.code) }}
-                </div>
-            </div>
+        <div class="ui bottom attached progress" data-percent="{{ '%.2f'|format(progress) }}">
+            <div class="bar"></div>
         </div>
     </div>
-    <div class="ui bottom attached progress" data-percent="{{ '%.2f'|format(progress) }}">
-        <div class="bar"></div>
-    </div>
-</div>
 {% endfor %}
 {% set changeLocale = plugin.setLocale(defaultLocale) %}

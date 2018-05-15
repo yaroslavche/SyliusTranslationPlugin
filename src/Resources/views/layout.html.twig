@@ -3,13 +3,17 @@
 {% block title %}Translation | Sylius{% endblock %}
 
 {% block stylesheets %}
-    {% include 'SyliusUiBundle::_stylesheets.html.twig' with {'path': 'assets/admin/css/style.css'} %}
+    {% include 'SyliusUiBundle::_stylesheets.html.twig' with {
+        'path' : 'assets/admin/css/style.css'
+    } %}
     {% include 'AcmeSyliusTranslationPlugin::_stylesheets.html.twig' %}
     {{ sonata_block_render_event('sylius.admin.layout.stylesheets') }}
 {% endblock %}
 
 {% block javascripts %}
-    {% include 'SyliusUiBundle::_javascripts.html.twig' with {'path': 'assets/admin/js/app.js'} %}
+    {% include 'SyliusUiBundle::_javascripts.html.twig' with {
+        'path' : 'assets/admin/js/app.js'
+    } %}
     {% include 'AcmeSyliusTranslationPlugin::_javascripts.html.twig' %}
     {{ sonata_block_render_event('sylius.admin.layout.javascripts') }}
 {% endblock %}
