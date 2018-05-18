@@ -27,7 +27,7 @@
     {% if currentLocale.code in localeCodes %} * {{ currentLocale.code }} not working properly. not defined fallback catalogues{% endif %}
     <div class="ui two column stackable grid">
         <div class="four wide column">
-            {% include 'AcmeSyliusTranslationPlugin:Locale:_tree.html.twig' %}
+            {% include 'AcmeSyliusTranslationPlugin:Locale:_domains.html.twig' %}
         </div>
         <div class="twelve wide column">
             {% set messages = fullMessageCatalogue.all(selectedDomain) %}

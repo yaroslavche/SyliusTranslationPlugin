@@ -1,6 +1,7 @@
 {% set currentLocale = plugin.getLocale() %}
 {% set defaultLocale = plugin.getSyliusDefaultLocale() %}
 {% set availableLocales = plugin.getSyliusAvailableLocales() %}
+{% set checker = plugin.getTranslationChecker() %}
 
 {% import '@SyliusUi/Macro/flags.html.twig' as syliusUiFlags %}
 {% import 'SyliusUiBundle:Macro:messages.html.twig' as syliusUiMessages %}

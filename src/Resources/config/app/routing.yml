@@ -4,9 +4,20 @@ sylius_translation_plugin_dashboard:
         _controller: AcmeSyliusTranslationPlugin:Translation:dashboard
 
 sylius_translation_plugin_translation_set_message:
-    path: /admin/translation/set
+    path: /admin/translation/setMessage
     defaults:
         _controller: AcmeSyliusTranslationPlugin:Translation:setMessage
+
+sylius_translation_plugin_locale_add_domain:
+    path: /admin/translation/addDomain
+    defaults:
+        _controller: AcmeSyliusTranslationPlugin:Translation:addDomain
+
+sylius_translation_plugin_locale_domain_add_message:
+    path: /admin/translation/addDomainMessage
+    defaults:
+        _controller: AcmeSyliusTranslationPlugin:Translation:addDomainMessage
+
 
 sylius_translation_plugin_translation_locale:
     path: /admin/translation/{localeCode}
