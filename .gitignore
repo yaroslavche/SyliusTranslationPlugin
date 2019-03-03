@@ -11,3 +11,4 @@
 /phpspec.yml
 
 /.idea/
+/.php_cs.cache

@@ -2,25 +2,22 @@
 
 declare(strict_types=1);
 
-namespace Tests\Yaroslavche\SyliusTranslationPlugin\Behat\Page\Shop;
+namespace Tests\Yaroslavche\SyliusTranslationPlugin\Behat\Page\Admin;
 
 use FriendsOfBehat\PageObjectExtension\Page\SymfonyPage;
 
-class DynamicWelcomePage extends SymfonyPage implements WelcomePageInterface
+class TranslationPage extends SymfonyPage implements TranslationPageInterface
 {
     /**
      * {@inheritdoc}
+     * @todo remove dummy and implement logic
      */
-    public function getGreeting(): string
+    public function getTranslation(): string
     {
         return $this->getSession()->getPage()->waitFor(3, function (): string {
-            $greeting = $this->getElement('greeting')->getText();
+            $translation = $this->getElement('translation')->getText();
 
-            if ('Loading...' === $greeting) {
-                return '';
-            }
-
-            return $greeting;
+            return $translation;
         });
     }
 
@@ -29,7 +26,7 @@ class DynamicWelcomePage extends SymfonyPage implements WelcomePageInterface
      */
     public function getRouteName(): string
     {
-        return 'acme_sylius_example_dynamic_welcome';
+        return 'yaroslavche_sylius_translation_plugin_page';
     }
 
     /**
@@ -38,7 +35,7 @@ class DynamicWelcomePage extends SymfonyPage implements WelcomePageInterface
     protected function getDefinedElements(): array
     {
         return array_merge(parent::getDefinedElements(), [
-            'greeting' => '#greeting',
+            'translation' => '#translation',
         ]);
     }
 }
