@@ -7,7 +7,7 @@ namespace Yaroslavche\SyliusTranslationPlugin\DependencyInjection;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\Extension;
-use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
+use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 
 final class YaroslavcheSyliusTranslationExtension extends Extension
 {
@@ -16,9 +16,13 @@ final class YaroslavcheSyliusTranslationExtension extends Extension
      */
     public function load(array $config, ContainerBuilder $container): void
     {
-        $config = $this->processConfiguration($this->getConfiguration([], $container), $config);
-        $loader = new XmlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
+        $configuration = $this->getConfiguration([], $container);
+        if (null === $configuration) {
+            return;
+        }
+        $config = $this->processConfiguration($configuration, $config);
 
-        $loader->load('services.xml');
+        $loader = new YamlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
+        $loader->load('services.yml');
     }
 }

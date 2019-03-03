@@ -1,0 +1,18 @@
+services:
+    # add menu via listener
+    app.listener.admin.menu_builder:
+        class: Yaroslavche\SyliusTranslationPlugin\Listener\AdminMenuListener
+        tags:
+            - { name: kernel.event_listener, event: sylius.menu.admin.main, method: addAdminMenuItems }
+
+    yaroslavche_sylius_translation_plugin_service:
+        class: Yaroslavche\SyliusTranslationPlugin\Service\TranslationService
+        autowire: true
+        autoconfigure: true
+
+    Yaroslavche\SyliusTranslationPlugin\Service\TranslationService: '@yaroslavche_sylius_translation_plugin_service'
+
+    Yaroslavche\SyliusTranslationPlugin\Controller\TranslationController:
+        arguments:
+            $translationService: '@yaroslavche_sylius_translation_plugin_service'
+        tags: ['controller.service_arguments']

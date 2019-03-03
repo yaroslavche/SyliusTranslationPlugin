@@ -1,0 +1,114 @@
+{% set currentLocale = plugin.getLocale() %}
+{% set defaultLocale = plugin.getSyliusDefaultLocale() %}
+{% set availableLocales = plugin.getSyliusAvailableLocales() %}
+{% set checker = plugin.getTranslationChecker() %}
+
+{% import '@SyliusUi/Macro/flags.html.twig' as syliusUiFlags %}
+{% import 'SyliusUiBundle:Macro:messages.html.twig' as syliusUiMessages %}
+
+{% set defaultLocaleMessageCatalogue = checker.getFullMessageCatalogue(defaultLocale) %}
+{% set totalMessagesCount = checker.getTotalMessagesCount(defaultLocaleMessageCatalogue) %}
+<div class="ui segment">
+    <div class="ui center aligned four column stackable divided grid">
+        <div class="column">
+            <div class="ui statistic">
+                <div class="value">
+                    {{ availableLocales|length }}
+                </div>
+                <div class="label">
+                    {{ 'sylius_available_locales'|trans([], 'SyliusTranslationPlugin', currentLocale.code) }}
+                </div>
+            </div>
+        </div>
+        <div class="column">
+            <div class="ui statistic">
+                <div class="value">
+                    {{ totalMessagesCount }}
+                </div>
+                <div class="label">
+                    {{ 'total_messages_count'|trans([], 'SyliusTranslationPlugin', currentLocale.code) }}
+                </div>
+            </div>
+        </div>
+        <div class="column">
+            <div class="ui statistic">
+                <div class="value">
+                    {{ defaultLocaleMessageCatalogue.getDomains()|length }}
+                </div>
+                <div class="label">
+                    {{ 'domains'|trans([], 'SyliusTranslationPlugin', currentLocale.code) }}
+                </div>
+            </div>
+        </div>
+        <div class="column">
+            <div class="ui statistic">
+                <div class="value">
+                    {{ '-' }}
+                </div>
+                <div class="label">
+                    {{ 'overall_progress'|trans([], 'SyliusTranslationPlugin', currentLocale.code) }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% for locale in availableLocales %}
+    {% set isDefaultLocale = defaultLocale == locale %}
+    {% set isCurrent = currentLocale == locale %}
+    {% set changeLocale = plugin.setLocale(locale) %}
+    {% set messageCatalogue = checker.getFullMessageCatalogue(locale) %}
+    {% set totalMessages = checker.getTotalMessagesCount(messageCatalogue) %}
+    {% set totalTranslated = checker.getTranslatedMessagesCount(messageCatalogue) %}
+    {% set progress = (totalTranslated / totalMessages) * 100 %}
+
+    <div class="ui segment{% if isDefaultLocale %} default{% endif %}{% if isCurrent %} active{% endif %}">
+        <div class="ui center aligned four column stackable divided grid">
+            <div class="column">
+                <div class="ui statistic">
+                    <div class="value">
+                        <a href="{{ path('sylius_translation_plugin_translation_locale', {'localeCode': locale.code}) }}">{{ locale.code }}</a>
+                    </div>
+                    <div class="label">
+                        {{ locale.name|trans([], null, currentLocale.code) }}
+                        {{ syliusUiFlags.fromLocaleCode(locale.code) }}
+                    </div>
+                </div>
+            </div>
+            <div class="column">
+                <div class="ui statistic">
+                    <div class="value">
+                        {{ totalTranslated }}
+                    </div>
+                    <div class="label">
+                        {{ 'total_translated'|trans([], 'SyliusTranslationPlugin', currentLocale.code) }}
+                    </div>
+                </div>
+            </div>
+            <div class="column">
+                <div class="ui statistic">
+                    <div class="value">
+                        {{ totalMessagesCount - totalTranslated }}
+                    </div>
+                    <div class="label">
+                        {{ 'total_untranslated'|trans([], 'SyliusTranslationPlugin', currentLocale.code) }}
+                    </div>
+                </div>
+            </div>
+            <div class="column">
+                <div class="ui statistic">
+                    <div class="value">
+                        {{ '%.2f'|format(progress) }}%
+                    </div>
+                    <div class="label">
+                        {{ 'progress'|trans([], 'SyliusTranslationPlugin', currentLocale.code) }}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="ui bottom attached progress" data-percent="{{ '%.2f'|format(progress) }}">
+            <div class="bar"></div>
+        </div>
+    </div>
+{% endfor %}
+{% set changeLocale = plugin.setLocale(defaultLocale) %}

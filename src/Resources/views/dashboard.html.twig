@@ -1,0 +1,19 @@
+{% extends 'YaroslavcheSyliusTranslationPlugin::layout.html.twig' %}
+
+{% set defaultLocale = plugin.getSyliusDefaultLocale() %}
+{% set pluginVersion = '0.1.1' %}
+
+{% set title = 'dashboard_title' | trans([], 'SyliusTranslationPlugin', defaultLocale.code) %}
+{% set description = 'dashboard_description' | trans({
+    '%version%': pluginVersion
+}, 'SyliusTranslationPlugin', defaultLocale.code) %}
+
+{% block content %}
+
+    {% include 'YaroslavcheSyliusTranslationPlugin::_header.html.twig' with {
+        'title' : title,
+        'description' : description
+    } %}
+    {% include 'YaroslavcheSyliusTranslationPlugin:Dashboard:_statistics.html.twig' %}
+
+{% endblock %}

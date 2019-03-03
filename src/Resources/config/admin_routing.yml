@@ -1,1 +1,35 @@
-# Define your own admin routes here
+sylius_translation_plugin_dashboard:
+    path: /admin/translation/
+    defaults:
+        _controller: YaroslavcheSyliusTranslationPlugin:Translation:dashboard
+
+sylius_translation_plugin_translation_set_message:
+    path: /admin/translation/setMessage
+    defaults:
+        _controller: YaroslavcheSyliusTranslationPlugin:Translation:setMessage
+
+sylius_translation_plugin_locale_add_domain:
+    path: /admin/translation/addDomain
+    defaults:
+        _controller: YaroslavcheSyliusTranslationPlugin:Translation:addDomain
+
+sylius_translation_plugin_locale_domain_add_message:
+    path: /admin/translation/addDomainMessage
+    defaults:
+        _controller: YaroslavcheSyliusTranslationPlugin:Translation:addDomainMessage
+
+
+sylius_translation_plugin_translation_locale:
+    path: /admin/translation/{localeCode}
+    defaults:
+        _controller: YaroslavcheSyliusTranslationPlugin:Translation:locale
+    requirements:
+        localeCode: '^(?!set)[a-z]{2,3}(?:_[A-Z]{2})?$'
+
+sylius_translation_plugin_translation_locale_domain:
+    path: /admin/translation/{localeCode}/{domain}
+    defaults:
+        _controller: YaroslavcheSyliusTranslationPlugin:Translation:locale
+    requirements:
+        localeCode: '^(?!set)[a-z]{2,3}(?:_[A-Z]{2})?$'
+        domain: '.+'
