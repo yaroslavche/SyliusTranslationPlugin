@@ -1,12 +1,11 @@
 {
-    "name": "sylius/plugin-skeleton",
+    "name": "yaroslavche/sylius-translation-plugin",
     "type": "sylius-plugin",
     "keywords": ["sylius", "sylius-plugin"],
-    "description": "Acme example plugin for Sylius.",
+    "description": "Translation plugin for Sylius.",
     "license": "MIT",
     "require": {
         "php": "^7.2",
-
         "sylius/sylius": "~1.4.0"
     },
     "require-dev": {
@@ -45,8 +44,8 @@
     "prefer-stable": true,
     "autoload": {
         "psr-4": {
-            "Acme\\SyliusExamplePlugin\\": "src/",
-            "Tests\\Acme\\SyliusExamplePlugin\\": "tests/"
+            "Yaroslavche\\SyliusTranslationPlugin\\": "src/",
+            "Tests\\Yaroslavche\\SyliusTranslationPlugin\\": "tests/"
         }
     },
     "autoload-dev": {
