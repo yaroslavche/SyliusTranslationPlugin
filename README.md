@@ -1,59 +1,86 @@
-## Sylius Translation plugin
+<p align="center">
+    <a href="https://sylius.com" target="_blank">
+        <img src="https://demo.sylius.com/assets/shop/img/logo.png" />
+    </a>
+</p>
 
-The main goal of this plugin is to enable you to edit translation phrases, without having to manually create or modify translation files on the server. This plugin allows you to change any phrase that is in Silyus in admin panel. All custom translations are saved in the `xliff` format.
-![v0.1.0](http://i.piccy.info/i9/c90f0417438587733e28914ef33f8737/1526384347/174800/1243534/15052018_143822.png)
+<h1 align="center">Plugin Skeleton</h1>
 
-
-In the admin panel view for each locale (enabled in the Sylius) shows how many messages have been translated, how many are left and translation progress.
-![v0.1.0](http://i.piccy.info/i9/a8186e675d18c9f4fdb96ef2bf67f612/1526384369/179348/1243534/15052018_143836.png)
-
-@dev:
-Adding your own domains and messages. If you need custom `blog` translation domain with `my_message` key - you can do it more easily. Just add to any locale and plugin show this phrase for other locales too (plugin collect all messages for all `Intl` languages as `fullMessageCatalogue`, even if it's not defined for selected locale).
-
-Planning: filter, search.
+<p align="center">Skeleton for starting Sylius plugins.</p>
 
 ## Installation
 
-Download
-```bash
-$ composer require yaroslavche/sylius-translation-plugin
-```
+1. Run `composer create-project sylius/plugin-skeleton ProjectName`.
 
-register bundle
-```php
-# app/AppKernel.php
+2. From the plugin skeleton root directory, run the following commands:
 
-// ...
-public function registerBundles(): array
-{
-    return array_merge(parent::registerBundles(), [
-        // ...
-        new \Acme\SyliusTranslationPlugin\AcmeSyliusTranslationPlugin(),
-    ]);
-}
-```
-import services
-```yaml
-# app/config/config.yml
+    ```bash
+    $ (cd tests/Application && yarn install)
+    $ (cd tests/Application && yarn build)
+    $ (cd tests/Application && bin/console assets:install public -e test)
+    
+    $ (cd tests/Application && bin/console doctrine:database:create -e test)
+    $ (cd tests/Application && bin/console doctrine:schema:create -e test)
+    ```
 
-imports:
-    # ...
-    - { resource: "@AcmeSyliusTranslationPlugin/Resources/config/services.yml" }
-```
+## Usage
 
-add routing
-```yaml
-# app/config/routing.yml
+### Running plugin tests
 
-acme_sylius_translation_plugin:
-    resource: "@AcmeSyliusTranslationPlugin/Resources/config/app/routing.yml"
-```
+  - PHPUnit
 
-and finally
-```bash
-$ bin/console assets:install web -e dev
-$ bin/console cache:clear
-$ bin/console cache:warmup
-$ bin/console server:run
-```
-Go to http://localhost:8000/admin/translation
+    ```bash
+    $ vendor/bin/phpunit
+    ```
+
+  - PHPSpec
+
+    ```bash
+    $ vendor/bin/phpspec run
+    ```
+
+  - Behat (non-JS scenarios)
+
+    ```bash
+    $ vendor/bin/behat --tags="~@javascript"
+    ```
+
+  - Behat (JS scenarios)
+ 
+    1. Download [Chromedriver](https://sites.google.com/a/chromium.org/chromedriver/)
+    
+    2. Download [Selenium Standalone Server](https://www.seleniumhq.org/download/).
+    
+    2. Run Selenium server with previously downloaded Chromedriver:
+    
+        ```bash
+        $ java -Dwebdriver.chrome.driver=chromedriver -jar selenium-server-standalone.jar
+        ```
+        
+    3. Run test application's webserver on `localhost:8080`:
+    
+        ```bash
+        $ (cd tests/Application && bin/console server:run localhost:8080 -d public -e test)
+        ```
+    
+    4. Run Behat:
+    
+        ```bash
+        $ vendor/bin/behat --tags="@javascript"
+        ```
+
+### Opening Sylius with your plugin
+
+- Using `test` environment:
+
+    ```bash
+    $ (cd tests/Application && bin/console sylius:fixtures:load -e test)
+    $ (cd tests/Application && bin/console server:run -d public -e test)
+    ```
+    
+- Using `dev` environment:
+
+    ```bash
+    $ (cd tests/Application && bin/console sylius:fixtures:load -e dev)
+    $ (cd tests/Application && bin/console server:run -d public -e dev)
+    ```
