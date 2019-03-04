@@ -19,7 +19,7 @@ final class AdminMenuListener
         ;
 
         $translationSubmenu
-            ->addChild('translation_dashboard', ['route' => 'sylius_translation_plugin_dashboard'])
+            ->addChild('translation_dashboard', ['route' => 'yaroslavche_sylius_translation_plugin_dashboard'])
             ->setLabel('Translation')
         ;
     }

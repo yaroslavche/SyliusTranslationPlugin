@@ -8,18 +8,18 @@ Feature: Translation ui in admin section
         Given the store operates on a single channel in "United States"
         And I am logged in as an administrator
 
-    Scenario: test
-        Given that channel allows to shop using the "English" locale
+    Scenario: set translation message
+        Given I send request to set locale "localeCode" translation "translation" for id "id" in domain "domain"
+        Then locale "localeCode" translation for id "id" in domain "domain" should be "translation"
 
-    @ui @javascript
-    Scenario: Get translation message
-        Given I select translations for locale "en"
-        And I select message domain "messages"
-        Then translation for "sylius.ui.view_and_edit_cart" should be "Test"
-
-    @ui @javascript
-    Scenario: Modify translation messages
-        Given I select translations for locale "en"
-        And I select message domain "messages"
-        And I change translation for "sylius.ui.view_and_edit_cart" with "Test"
-        Then translation for "sylius.ui.view_and_edit_cart" should be "Test"
+#        Given I send request to set locale "null" translation "translation" for id "id" in domain "domain"
+#        Then last response should be error with text "Locale must be set"
+#
+#        Given I send request to set locale "localeCode" translation "translation" for id "id" in domain "null"
+#        Then last response should be error with text "Domain must be set"
+#
+#        Given I send request to set locale "localeCode" translation "translation" for id "null" in domain "domain"
+#        Then last response should be error with text "Id must be set"
+#
+#        Given I send request to set locale "localeCode" translation "null" for id "id" in domain "domain"
+#        Then locale "localeCode" translation for id "id" in domain "domain" should be "empty"

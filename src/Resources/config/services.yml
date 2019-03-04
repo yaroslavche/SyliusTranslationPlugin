@@ -5,6 +5,7 @@ services:
         tags:
             - { name: kernel.event_listener, event: sylius.menu.admin.main, method: addAdminMenuItems }
 
+    # services
     yaroslavche_sylius_translation_plugin_service:
         class: Yaroslavche\SyliusTranslationPlugin\Service\TranslationService
         autowire: true
@@ -12,7 +13,17 @@ services:
 
     Yaroslavche\SyliusTranslationPlugin\Service\TranslationService: '@yaroslavche_sylius_translation_plugin_service'
 
+    # controller
     Yaroslavche\SyliusTranslationPlugin\Controller\TranslationController:
         arguments:
             $translationService: '@yaroslavche_sylius_translation_plugin_service'
         tags: ['controller.service_arguments']
+
+    # events
+    # show messages list in locale edit page. need filter by resource, can't extend BlockEventListener
+#    yaroslavche_sylius_translation_plugin_admin_locale_update_after_content:
+#        class: Sylius\Bundle\UiBundle\Block\BlockEventListener
+#        arguments:
+#            - '@@YaroslavcheSyliusTranslationPlugin/locale.html.twig'
+#        tags:
+#            - { name: kernel.event_listener, event: sylius.admin.locale.update.after_content, method: onBlockEvent }
