@@ -4,10 +4,13 @@ yaroslavche_sylius_translation_plugin_dashboard:
     controller: Yaroslavche\SyliusTranslationPlugin\Controller\TranslationController::dashboard
 
 yaroslavche_sylius_translation_plugin_locale:
-    path:     /admin/translation/{localeCode}
+    path:     /admin/translation/{localeCode}/{domain}
     controller: Yaroslavche\SyliusTranslationPlugin\Controller\TranslationController::locale
     requirements:
         localeCode: '^[a-z]{2,3}(?:_[A-Z]{2})?$'
+        domain: '.+'
+    defaults:
+        domain: ''
 
 
 # ajax

@@ -46,14 +46,23 @@ final class TranslationController extends AbstractController
     }
 
     /**
+     * @param string $localeCode
+     * @param string|null $domain
      * @return Response
      */
-    public function locale(string $localeCode): Response
+    public function locale(string $localeCode, ?string $domain = null): Response
     {
-        // check locale and render then
+        $locale = $this->translationService->findLocaleByCode($localeCode);
+        if(null === $locale)
+        {
+            /** @todo add flash message */
+            return $this->dashboard();
+        }
+
         return $this->render('@YaroslavcheSyliusTranslationPlugin/locale.html.twig', [
             'service' => $this->translationService,
             'pluginTranslationDomain' => TranslationService::PLUGIN_TRANSLATION_DOMAIN,
+            'selectedDomain' => $domain
         ]);
     }
 

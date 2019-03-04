@@ -8,25 +8,18 @@
     '%someData%': ''
 }, pluginTranslationDomain, defaultLocale.code) %}
 
+{% set localeMessageCatalogue = service.getCurrentLocaleMessageCatalogue() %}
+
 {% block content %}
     {% include 'YaroslavcheSyliusTranslationPlugin::_header.html.twig' %}
-    {#{% set localeCodes = ['en_US'] %}#}
-    {#{% if currentLocale.code in localeCodes %} * {{ currentLocale.code }} not working properly. not defined fallback catalogues{% endif %}#}
     <div class="ui two column stackable grid">
         <div class="four wide column">
-            domains
-            {#{% include 'YaroslavcheSyliusTranslationPlugin:Locale:_domains.html.twig' %}#}
+            {% include 'YaroslavcheSyliusTranslationPlugin:Locale:_domains.html.twig' %}
         </div>
         <div class="twelve wide column">
-            messages
-            {#{% set messages = fullMessageCatalogue.all(selectedDomain) %}#}
-            {#{% set customMessages = customMessageCatalogue.all(selectedDomain) %}#}
-            {#{% include 'YaroslavcheSyliusTranslationPlugin:Locale:_messages.html.twig' with {#}
-                {#'messages' : messages,#}
-                {#'customMessages' : customMessages,#}
-                {#'localeCode' : currentLocale.code,#}
-                {#'domain' : selectedDomain#}
-            {#} %}#}
+            {% include 'YaroslavcheSyliusTranslationPlugin:Locale:_messages.html.twig' with {
+                'domain' : selectedDomain
+            } %}
         </div>
     </div>
 {% endblock %}

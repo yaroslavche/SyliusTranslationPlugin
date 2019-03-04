@@ -10,6 +10,8 @@ services:
         class: Yaroslavche\SyliusTranslationPlugin\Service\TranslationService
         autowire: true
         autoconfigure: true
+        arguments:
+            $translator: '@translator'
 
     Yaroslavche\SyliusTranslationPlugin\Service\TranslationService: '@yaroslavche_sylius_translation_plugin_service'
 
