@@ -4,6 +4,8 @@ declare(strict_types=1);
 namespace Yaroslavche\SyliusTranslationPlugin\Service;
 
 use Sylius\Component\Locale\Model\Locale;
+use Sylius\Component\Locale\Provider\LocaleProviderInterface;
+use Sylius\Component\Resource\Repository\RepositoryInterface;
 use Symfony\Component\Translation\DataCollectorTranslator;
 
 class TranslationService
@@ -28,21 +30,22 @@ class TranslationService
     /**
      * TranslationService constructor.
      * @param DataCollectorTranslator $translator
+     * @param LocaleProviderInterface $localeProvider
+     * @param RepositoryInterface $localeRepository
      */
-    public function __construct(DataCollectorTranslator $translator)
+    public function __construct(DataCollectorTranslator $translator, LocaleProviderInterface $localeProvider, RepositoryInterface $localeRepository)
     {
         $this->translator = clone $translator;
         dump($translator->getCatalogue()->all());
-        $en_US = new Locale();
-        $en_US->setCode('uk_UA');
-        $uk_UA = new Locale();
-        $uk_UA->setCode('en_US');
-        $ru_RU = new Locale();
-        $ru_RU->setCode('ru_RU');
-        $this->locales = [$en_US, $uk_UA, $ru_RU];
-        $this->defaultLocale = $en_US;
-        $this->currentLocale = $uk_UA;
-        $this->localeMessageCatalogues = [];
+        $this->locales = $localeRepository->findAll();
+        foreach ($this->locales as $locale) {
+            $localeCode = $locale->getCode();
+            if ($localeCode === $localeProvider->getDefaultLocaleCode()) {
+                $this->defaultLocale = $locale;
+                break;
+            }
+        }
+        $this->currentLocale = $this->defaultLocale;
         $this->getLocaleMessageCatalogue($this->currentLocale);
     }
 
@@ -53,7 +56,7 @@ class TranslationService
     public function getLocaleMessageCatalogue(?Locale $locale = null): SyliusLocaleMessageCatalogueService
     {
         $locale = $locale ?? $this->currentLocale;
-        if (!array_key_exists($locale->getCode(), $this->localeMessageCatalogues)) {
+        if (!array_key_exists($locale->getCode(), $this->localeMessageCatalogues ?? [])) {
             $this->localeMessageCatalogues[$locale->getCode()] = new SyliusLocaleMessageCatalogueService($this->translator, $locale);
         }
 

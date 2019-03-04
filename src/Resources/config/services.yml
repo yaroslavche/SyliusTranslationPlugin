@@ -12,6 +12,7 @@ services:
         autoconfigure: true
         arguments:
             $translator: '@translator'
+            $localeRepository: '@sylius.repository.locale'
 
     Yaroslavche\SyliusTranslationPlugin\Service\TranslationService: '@yaroslavche_sylius_translation_plugin_service'
 
