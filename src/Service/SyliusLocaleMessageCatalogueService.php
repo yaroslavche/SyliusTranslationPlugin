@@ -3,12 +3,11 @@
 namespace Yaroslavche\SyliusTranslationPlugin\Service;
 
 use Sylius\Component\Locale\Model\Locale;
-use Symfony\Component\Translation\DataCollectorTranslator;
 use Symfony\Component\Translation\MessageCatalogue;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 class SyliusLocaleMessageCatalogueService
 {
-    /** @var DataCollectorTranslator $translator */
     private $translator;
 
     /** @var Locale $locale */
@@ -16,6 +15,9 @@ class SyliusLocaleMessageCatalogueService
 
     /** @var MessageCatalogue $messageCatalogue */
     private $messageCatalogue;
+
+    /** @var string[] $domains */
+    private $domains;
 
     /** @var array $translatedMessages */
     private $translatedMessages;
@@ -29,13 +31,14 @@ class SyliusLocaleMessageCatalogueService
     /**
      * SyliusLocaleMessageCatalogueService constructor
      *
-     * @param DataCollectorTranslator $translator
      * @param Locale|null $locale
      */
-    public function __construct(DataCollectorTranslator $translator, ?Locale $locale = null)
+    public function __construct($translator, ?Locale $locale = null)
     {
         $this->translator = $translator;
         $this->locale = $locale;
+        $this->messageCatalogue = $this->translator->getCatalogue();
+        $this->domains = $this->messageCatalogue->getDomains();
     }
 
     private function loadMessageCatalogue()
@@ -67,12 +70,17 @@ class SyliusLocaleMessageCatalogueService
 
     public function getDomains(): array
     {
-        return ['messages', 'test'];
+        return $this->domains;
     }
 
     public function getTranslatedMessages(?string $domain = null): array
     {
-        return ['message1' => '1', 'test_message' => 'test'];
+        if(null === $domain) {
+            // get all
+            return [];
+        }
+        if(in_array($domain, $this->domains)) return $this->messageCatalogue->all($domain);
+        return [];
     }
 
     public function getUntranslatedMessages(?string $domain = null): array

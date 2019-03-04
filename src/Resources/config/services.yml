@@ -6,7 +6,7 @@ services:
             - { name: kernel.event_listener, event: sylius.menu.admin.main, method: addAdminMenuItems }
 
     # services
-    yaroslavche_sylius_translation_plugin_service:
+    yaroslavche_sylius_translation_plugin_translation_service:
         class: Yaroslavche\SyliusTranslationPlugin\Service\TranslationService
         autowire: true
         autoconfigure: true
@@ -14,12 +14,22 @@ services:
             $translator: '@translator'
             $localeRepository: '@sylius.repository.locale'
 
-    Yaroslavche\SyliusTranslationPlugin\Service\TranslationService: '@yaroslavche_sylius_translation_plugin_service'
+    Yaroslavche\SyliusTranslationPlugin\Service\TranslationService: '@yaroslavche_sylius_translation_plugin_translation_service'
+
+    yaroslavche_sylius_translation_plugin_locale_message_catalogue_service:
+        class: Yaroslavche\SyliusTranslationPlugin\Service\SyliusLocaleMessageCatalogueService
+        autowire: true
+        autoconfigure: true
+        arguments:
+            $translator: '@translator'
+            $locale: null
+
+    Yaroslavche\SyliusTranslationPlugin\Service\SyliusLocaleMessageCatalogueService: '@yaroslavche_sylius_translation_plugin_locale_message_catalogue_service'
 
     # controller
     Yaroslavche\SyliusTranslationPlugin\Controller\TranslationController:
         arguments:
-            $translationService: '@yaroslavche_sylius_translation_plugin_service'
+            $translationService: '@yaroslavche_sylius_translation_plugin_translation_service'
         tags: ['controller.service_arguments']
 
     # events

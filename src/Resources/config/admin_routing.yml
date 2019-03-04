@@ -10,7 +10,7 @@ yaroslavche_sylius_translation_plugin_locale:
         localeCode: '^[a-z]{2,3}(?:_[A-Z]{2})?$'
         domain: '.+'
     defaults:
-        domain: ''
+        domain: 'messages'
 
 
 # ajax

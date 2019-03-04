@@ -50,12 +50,20 @@ final class TranslationController extends AbstractController
      * @param string|null $domain
      * @return Response
      */
-    public function locale(string $localeCode, ?string $domain = null): Response
+    public function locale(string $localeCode, string $domain = 'messages'): Response
     {
         $locale = $this->translationService->findLocaleByCode($localeCode);
         if(null === $locale)
         {
-            /** @todo add flash message */
+            /** @todo add flash message Locale must be set */
+            return $this->dashboard();
+        }
+
+        $this->translationService->setCurrentLocale($locale);
+        $localeMessageCatalogue = $this->translationService->getLocaleMessageCatalogue($locale);
+        $domains = $localeMessageCatalogue->getDomains();
+        if(!in_array($domain, $domains)) {
+            /** @todo add flash message Domain $domain not found */
             return $this->dashboard();
         }
 

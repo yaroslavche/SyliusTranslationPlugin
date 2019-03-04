@@ -6,13 +6,13 @@ namespace Yaroslavche\SyliusTranslationPlugin\Service;
 use Sylius\Component\Locale\Model\Locale;
 use Sylius\Component\Locale\Provider\LocaleProviderInterface;
 use Sylius\Component\Resource\Repository\RepositoryInterface;
-use Symfony\Component\Translation\DataCollectorTranslator;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 class TranslationService
 {
     const PLUGIN_TRANSLATION_DOMAIN = 'YaroslavcheSyliusTranslationPlugin';
 
-    /** @var DataCollectorTranslator $translator */
+    /** @var TranslatorInterface $translator */
     private $translator;
 
     /** @var Locale $defaultLocale */
@@ -29,14 +29,13 @@ class TranslationService
 
     /**
      * TranslationService constructor.
-     * @param DataCollectorTranslator $translator
+     * @param TranslatorInterface $translator
      * @param LocaleProviderInterface $localeProvider
      * @param RepositoryInterface $localeRepository
      */
-    public function __construct(DataCollectorTranslator $translator, LocaleProviderInterface $localeProvider, RepositoryInterface $localeRepository)
+    public function __construct(TranslatorInterface $translator, LocaleProviderInterface $localeProvider, RepositoryInterface $localeRepository)
     {
-        $this->translator = clone $translator;
-        dump($translator->getCatalogue()->all());
+        $this->translator = $translator;
         $this->locales = $localeRepository->findAll();
         foreach ($this->locales as $locale) {
             $localeCode = $locale->getCode();
@@ -45,8 +44,7 @@ class TranslationService
                 break;
             }
         }
-        $this->currentLocale = $this->defaultLocale;
-        $this->getLocaleMessageCatalogue($this->currentLocale);
+        $this->setCurrentLocale($this->defaultLocale);
     }
 
     /**
@@ -81,6 +79,16 @@ class TranslationService
     public function getCurrentLocale(): Locale
     {
         return $this->currentLocale;
+    }
+
+    /**
+     * @param Locale $currentLocale
+     */
+    public function setCurrentLocale(Locale $currentLocale): void
+    {
+        $this->currentLocale = $currentLocale;
+        $this->translator->setLocale($this->currentLocale->getCode());
+        $this->getLocaleMessageCatalogue($this->currentLocale);
     }
 
     /**
@@ -161,6 +169,7 @@ class TranslationService
     public function getTotalTranslatedCount(Locale $locale = null): int
     {
         $localeMessageCatalogue = $this->getLocaleMessageCatalogue($locale);
+        $this->setCurrentLocale($locale ?? $this->currentLocale);
         return count($localeMessageCatalogue->getTranslatedMessages());
     }
 
