@@ -8,7 +8,7 @@
     '%someData%': ''
 }, pluginTranslationDomain, defaultLocale.code) %}
 
-{% set localeMessageCatalogue = service.getCurrentLocaleMessageCatalogue() %}
+{% set localeMessageCatalogue = service.getLocaleMessageCatalogue(currentLocale) %}
 
 {% block content %}
     {% include 'YaroslavcheSyliusTranslationPlugin::_header.html.twig' %}

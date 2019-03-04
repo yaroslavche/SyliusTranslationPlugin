@@ -89,4 +89,21 @@ class SyliusLocaleMessageCatalogueService
     {
         return array_merge($this->getTranslatedMessages() ?? [], $this->getUntranslatedMessages() ?? [], $this->getCustomMessages() ?? []);
     }
+
+    public function setMessage(string $id, string $translation, ?string $domain = 'messages'): bool
+    {
+        return true;
+    }
+
+    public function addDomain(string $name): bool
+    {
+        return true;
+    }
+
+    public function findTranslation(string $id, ?string $domain = null): ?string
+    {
+        $domain = $domain ?? 'messages'; // ??=
+
+        return $domain . $id;
+    }
 }

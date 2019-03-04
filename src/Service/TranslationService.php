@@ -19,11 +19,11 @@ class TranslationService
     /** @var Locale $currentLocale */
     private $currentLocale;
 
-    /** @var SyliusLocaleMessageCatalogueService $currentLocaleMessageCatalogue */
-    private $currentLocaleMessageCatalogue;
-
     /** @var Locale[] $locales */
     private $locales;
+
+    /** @var array|SyliusLocaleMessageCatalogueService[$localeCode => $localeMessageCatalogue] $localeMessageCatalogues */
+    private $localeMessageCatalogues;
 
     /**
      * TranslationService constructor.
@@ -37,12 +37,28 @@ class TranslationService
         $en_US->setCode('uk_UA');
         $uk_UA = new Locale();
         $uk_UA->setCode('en_US');
-        $this->locales = [$en_US, $uk_UA];
+        $ru_RU = new Locale();
+        $ru_RU->setCode('ru_RU');
+        $this->locales = [$en_US, $uk_UA, $ru_RU];
         $this->defaultLocale = $en_US;
         $this->currentLocale = $uk_UA;
-        $this->currentLocaleMessageCatalogue = new SyliusLocaleMessageCatalogueService($this->translator, $this->currentLocale);
+        $this->localeMessageCatalogues = [];
+        $this->getLocaleMessageCatalogue($this->currentLocale);
     }
 
+    /**
+     * @param Locale|null $locale
+     * @return SyliusLocaleMessageCatalogueService
+     */
+    public function getLocaleMessageCatalogue(?Locale $locale = null): SyliusLocaleMessageCatalogueService
+    {
+        $locale = $locale ?? $this->currentLocale;
+        if (!array_key_exists($locale->getCode(), $this->localeMessageCatalogues)) {
+            $this->localeMessageCatalogues[$locale->getCode()] = new SyliusLocaleMessageCatalogueService($this->translator, $locale);
+        }
+
+        return $this->localeMessageCatalogues[$locale->getCode()];
+    }
 
     /**
      * Get current locale used in Sylius
@@ -101,10 +117,9 @@ class TranslationService
      */
     public function findTranslation(string $id, string $domain = 'messages', ?Locale $locale = null): ?string
     {
-        $translation = null;
-        // if locale not null && current locale !== locale then create SyliusLocaleMessageCatalogue otherwise use current
+        $localeMessageCatalogue = $this->getLocaleMessageCatalogue($locale);
 
-        return $translation ?? $id;
+        return $localeMessageCatalogue->findTranslation($id, $domain) ?? $id;
     }
 
     /**
@@ -118,7 +133,8 @@ class TranslationService
      */
     public function setMessage(Locale $locale, string $id, string $translation, ?string $domain = 'messages'): bool
     {
-        return true;
+        $localeMessageCatalogue = $this->getLocaleMessageCatalogue($locale);
+        return $localeMessageCatalogue->setMessage($id, $translation, $domain);
     }
 
     /**
@@ -129,7 +145,8 @@ class TranslationService
      */
     public function addDomain(string $name): bool
     {
-        return true;
+        $localeMessageCatalogue = $this->getLocaleMessageCatalogue();
+        return $localeMessageCatalogue->addDomain($name);
     }
 
     /**
@@ -140,7 +157,8 @@ class TranslationService
      */
     public function getTotalTranslatedCount(Locale $locale = null): int
     {
-        return count($this->currentLocaleMessageCatalogue->getTranslatedMessages());
+        $localeMessageCatalogue = $this->getLocaleMessageCatalogue($locale);
+        return count($localeMessageCatalogue->getTranslatedMessages());
     }
 
     /**
@@ -151,7 +169,8 @@ class TranslationService
      */
     public function getTotalUntranslatedCount(Locale $locale = null): int
     {
-        return count($this->currentLocaleMessageCatalogue->getUntranslatedMessages());
+        $localeMessageCatalogue = $this->getLocaleMessageCatalogue($locale);
+        return count($localeMessageCatalogue->getUntranslatedMessages());
     }
 
     /**
@@ -162,7 +181,8 @@ class TranslationService
      */
     public function getTotalDomainCount(Locale $locale = null): int
     {
-        return count($this->currentLocaleMessageCatalogue->getDomains());
+        $localeMessageCatalogue = $this->getLocaleMessageCatalogue($locale);
+        return count($localeMessageCatalogue->getDomains());
     }
 
     /**
@@ -180,13 +200,5 @@ class TranslationService
             return 0;
         }
         return ($translatedCount / $totalCount) * 100;
-    }
-
-    /**
-     * @return SyliusLocaleMessageCatalogueService
-     */
-    public function getCurrentLocaleMessageCatalogue(): SyliusLocaleMessageCatalogueService
-    {
-        return $this->currentLocaleMessageCatalogue;
     }
 }
