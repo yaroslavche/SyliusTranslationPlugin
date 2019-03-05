@@ -5,13 +5,6 @@
                 {{ 'domains_list' | trans([], pluginTranslationDomain, defaultLocale.code) }}
             </h2>
         </div>
-        {#<div class="six wide column">#}
-            {#<div class="ui green inverted button tiny" style="float: right;"#}
-                 {#onclick="SyliusTranslationPlugin.addDomain(jQuery('#addDomainModal'));">#}
-                {#<i class="add icon"></i>#}
-                {#{{ 'add_domain' | trans([], pluginTranslationDomain, defaultLocale.code) }}#}
-            {#</div>#}
-        {#</div>#}
     </div>
     <div class="ui middle aligned list">
         <div class="item">
@@ -23,18 +16,12 @@
             </div>
         </div>
         {% for domain in fullMessageCatalogue.getDomains() %}
-            {#{% set totalMessagesCount = fullMessageCatalogue.all(domain) | length %}#}
-            {#{% set translatedMessagesCount = localeMessageCatalogue.all(domain) | length %}#}
-            {#{% set untranslatedMessagesCount = totalMessagesCount - translatedMessagesCount %}#}
-            {#{% set domainTranslationProgress = (translatedMessagesCount / totalMessagesCount) * 100 %}#}
-            <div class="item">
+            <div class="item domain-item" data-domain="{{ domain }}">
                 <i class="icon folder{% if selectedDomain is same as(domain) %} open teal{% endif %}"></i>
                 <div class="content">
                     <div class="header">
-                        <a href="{{ path('yaroslavche_sylius_translation_plugin_locale', {'localeCode': currentLocale.code, 'domain': domain}) }}">{{ domain }}</a>
+                        <a onclick="SyliusTranslationPlugin.selectDomain('{{ domain }}');">{{ domain }}</a>
                     </div>
-                    {#<div class="description">Total: {{ totalMessagesCount }},#}
-                        {#Translated: {{ translatedMessagesCount }} ({{ '%.2f' | format(domainTranslationProgress) }}%)</div>#}
                 </div>
             </div>
         {% endfor %}

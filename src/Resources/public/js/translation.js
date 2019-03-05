@@ -56,6 +56,68 @@ const SyliusTranslationPlugin = {
                         }
                     }
                 }).modal('show');
+    },
+    selectDomain(domain) {
+        this.filterTranslations({'domain': domain});
+        let domainItems = document.getElementsByClassName('domain-item');
+        Array.from(domainItems).forEach((domainElement) => {
+
+        });
+    },
+    applyFilters() {
+        let domainElement = document.getElementById('filterDomain');
+        let idElement = document.getElementById('filterId');
+        let translatedElement = document.getElementById('filterTranslated');
+        let untranslatedElement = document.getElementById('filterUntranslated');
+        let customElement = document.getElementById('filterCustom');
+        this.filterTranslations({
+            domain: domainElement.value,
+            id: idElement.value,
+            isTranslated: translatedElement.parentElement.classList.contains('checked'),
+            isUntranslated: untranslatedElement.parentElement.classList.contains('checked'),
+            isCustom: customElement.parentElement.classList.contains('checked')
+        });
+    },
+    filterTranslations(filters) {
+        const applyFilters = Object.assign({}, {
+            domain: '',
+            id: '',
+            isTranslated: true,
+            isUntranslated: true,
+            isCustom: true
+        }, filters);
+        let translationRows = document.getElementsByClassName('translationRow');
+        Array.from(translationRows).forEach((translationElement) => {
+            translationElement.classList.remove('hidden');
+
+            let isTranslated = translationElement.getAttribute('data-is-translated') === '1';
+            if (!applyFilters.isTranslated && isTranslated) translationElement.classList.add('hidden');
+            if (!applyFilters.isUntranslated && !isTranslated) translationElement.classList.add('hidden');
+
+            let isCustom = translationElement.getAttribute('data-is-custom') === '1';
+            if (!applyFilters.isCustom && isCustom) translationElement.classList.add('hidden');
+
+            if (applyFilters.id.length > 0) {
+                let id = translationElement.getAttribute('data-id');
+                if (id !== applyFilters.id) translationElement.classList.add('hidden');
+            }
+
+            if (applyFilters.domain.length > 0) {
+                let domain = translationElement.getAttribute('data-domain');
+                if (domain !== applyFilters.domain) translationElement.classList.add('hidden');
+            }
+        });
+    },
+    editTranslation(element) {
+        let row = element.parentElement.parentElement.parentElement;
+        let currentTranslation = row.getAttribute('data-translation');
+        let translation = this.value;
+        if (currentTranslation === translation) return;
+
+        let localeCode = row.getAttribute('data-locale-code');
+        let domain = row.getAttribute('data-domain');
+        let id = row.getAttribute('data-id');
+        SyliusTranslationPlugin.setMessage(localeCode, domain, id, translation);
     }
 };
 
@@ -63,13 +125,13 @@ jQuery(document).ready(function () {
     jQuery('.progress').progress();
     jQuery('.translation_input').keypress(function (e) {
         if (e.which == 13) {
-            SyliusTranslationPlugin.editTranslation(jQuery(this).parent().parent().parent());
+            SyliusTranslationPlugin.editTranslation(this);
         }
     });
 });
 
 jQuery.uiAlert = function (options) {
-    const setUI = $.extend({
+    const setUI = Object.assign({}, {
         introText: '',
         messageText: '',
         textColor: '#19c3aa',
