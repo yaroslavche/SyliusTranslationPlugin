@@ -120,7 +120,12 @@ final class TranslationController extends AbstractController
 
         try {
             $success = $this->translationService->setMessage($locale, $id, $translation ?? '', $domain);
-            return new JsonResponse(['isSet' => $success ? 'true' : 'false']);
+            $messageIsSuccessfullySetMessage = $this->translationService->findTranslation(
+                'set_message_success',
+                TranslationService::PLUGIN_TRANSLATION_DOMAIN
+            );
+            dump($messageIsSuccessfullySetMessage);
+            return new JsonResponse(['status' => 'success', 'message' => $messageIsSuccessfullySetMessage]);
         } catch (\Exception $exception) {
             $setMessageErrorMessage = $this->translationService->findTranslation(
                 'set_message_error',

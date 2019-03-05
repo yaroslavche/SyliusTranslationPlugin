@@ -1,125 +1,171 @@
-var SyliusTranslationPlugin = {
-    editTranslation: (dataContainer) => {
-        let
-            localeCode = dataContainer.data('locale-code'),
-            domain = dataContainer.data('domain'),
-            messageDomain = dataContainer.data('message-domain'),
-            translation = dataContainer.data('translation'),
-            newTranslation = dataContainer.find('.translation_input').val();
-
-        if (translation == newTranslation) return;
-        dataContainer.find('.ui.icon.input').addClass('loading');
-        SyliusTranslationPlugin.setMessage(localeCode, domain, messageDomain, newTranslation, (result) => {
-            dataContainer.find('.ui.icon.input').removeClass('loading');
-            if (result) {
-                if (translation == '')
-                    dataContainer.find('.icon.circle.outline.red').removeClass('red').addClass('check green');
-                if (dataContainer.find('.icon.cog.teal').length == 0)
-                    dataContainer.find('.icon.circle.check.green').after('<i class="icon cog teal"></i>');
-            } else {
-                alert('something wrong');
-            }
-        });
-    },
-    setMessage: (localeCode, domain, messageDomain, translation, callback) => {
-        let result = false;
-        jQuery.ajax({
+const SyliusTranslationPlugin = {
+    setMessage(localeCode, domain, id, translation) {
+        (async () => {
+            const rawResponse = await fetch('/admin/translation/setMessage', {
                 method: 'POST',
-                url: '/admin/translation/setMessage',
-                data: {
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
                     'localeCode': localeCode,
                     'domain': domain,
-                    'messageDomain': messageDomain,
+                    'id': id,
                     'translation': translation
-                },
-                dataType: 'json'
-            })
-            .done(function(response) {
-                callback(response.status == 'success');
+                })
             });
+            const response = await rawResponse.json();
+            this.showResponse(response);
+        })();
     },
-    addDomain: function(dataContainer) {
-        SyliusTranslationPlugin.showModal(dataContainer, function() {
-            let
-                domainInput = jQuery('#addDomainModal_domainInput'),
-                localeCode = dataContainer.data('locale-code');
-            if (domainInput.length > 0) {
-                jQuery.ajax({
-                        method: 'POST',
-                        url: '/admin/translation/addDomain',
-                        data: {
-                            'localeCode': localeCode,
-                            'domain': domainInput.val()
-                        },
-                        dataType: 'json'
-                    })
-                    .done(function(response) {
-                        if (response.status == 'success') {
-                            domainInput.val('');
-                            SyliusTranslationPlugin.reloadDomainList()
-                        } else {
-                            alert('something wrong, try again');
-                        }
-                    });
-            }
+    showResponse(response) {
+        let colors = {
+            error: '#ff5751',
+            success: '#19c3aa',
+            info: '#55a9ee',
+            warning: '#f2711c'
+        };
+        let icons = {
+            error: 'times circle',
+            success: 'checkmark circle',
+            info: 'info',
+            warning: 'bell'
+        };
+
+        $.uiAlert({
+            introText: response.status,
+            messageText: response.message,
+            textColor: colors[response.status],
+            icon: icons[response.status],
+            time: 5
         });
     },
-    addDomainMessage: function(dataContainer) {
-        SyliusTranslationPlugin.showModal(dataContainer, function() {
-            let
-                localeCode = dataContainer.data('locale-code'),
-                domain = dataContainer.data('domain'),
-                messageDomainInput = jQuery('#addDomainMessageModal_messageDomainInput'),
-                translationInput = jQuery('#addDomainMessageModal_translationInput');
-            if (messageDomainInput.length > 0 && translationInput.length > 0) {
-                jQuery.ajax({
-                        method: 'POST',
-                        url: '/admin/translation/addDomainMessage',
-                        data: {
-                            'localeCode': localeCode,
-                            'domain': domain,
-                            'messageDomain': messageDomainInput.val(),
-                            'translation': translationInput.val()
-                        },
-                        dataType: 'json'
-                    })
-                    .done(function(response) {
-                        if (response.status == 'success') {
-                            messageDomainInput.val('');
-                            translationInput.val('');
-                            SyliusTranslationPlugin.reloadMessageList();
-                        } else {
-                            alert('something wrong, try again');
-                        }
-                    });
-            }
-        });
-    },
-    showModal: function(modalContainer, callback) {
+    showSetMessageModal(modalContainer) {
         if (modalContainer.length > 0)
             modalContainer
-            .modal('setting', 'closable', false)
-            .modal({
-                onApprove: function(element) {
-                    callback(element);
-                }
-            }).modal('show');
-    },
-    reloadMessageList: function() {
-        console.log('implement reloadMessageList');
-        location.reload();
-    },
-    reloadDomainList: function() {
-        console.log('implement reloadDomainList');
-        location.reload();
+                .modal('setting', 'closable', false)
+                .modal({
+                    onApprove: () => {
+                        let
+                            localeCode = modalContainer.data('locale-code'),
+                            domain = modalContainer.data('domain'),
+                            translationIdInput = jQuery('#addDomainMessageModal_translationIdInput'),
+                            translationInput = jQuery('#addDomainMessageModal_translationInput');
+                        if (translationIdInput.length > 0 && translationInput.length > 0) {
+                            this.setMessage(localeCode, domain, translationIdInput.val(), translationInput.val());
+                        }
+                    }
+                }).modal('show');
     }
 };
 
-jQuery(document).ready(function() {
-    if (jQuery('.progress').length > 0) jQuery('.progress').progress();
-    jQuery('.translation_input').keypress(function(e) {
+jQuery(document).ready(function () {
+    jQuery('.progress').progress();
+    jQuery('.translation_input').keypress(function (e) {
         if (e.which == 13) {
             SyliusTranslationPlugin.editTranslation(jQuery(this).parent().parent().parent());
         }
     });
 });
+
+jQuery.uiAlert = function (options) {
+    const setUI = $.extend({
+        introText: '',
+        messageText: '',
+        textColor: '#19c3aa',
+        backgroundColor: '#fff',
+        position: 'top-right',
+        icon: '',
+        time: 5,
+        permanent: false
+    }, options);
+
+    let randomId = generateRandomString(32);
+
+    // UiAlert message block
+    let UiAlertContainer = document.createElement('div');
+    UiAlertContainer.id = 'ui-alert-' + randomId;
+    UiAlertContainer.classList.add('ui');
+    UiAlertContainer.classList.add('icon');
+    UiAlertContainer.classList.add('message');
+    UiAlertContainer.style.backgroundColor = setUI.backgroundColor;
+    UiAlertContainer.style.boxShadow = '0 0 0 1px rgba(255,255,255,.5) inset,0 0 0 0 transparent';
+
+    // UiAlert icon inside message block
+    let UiAlertIcon = document.createElement('i');
+    setUI.icon.split(' ').forEach((icon) => {
+        UiAlertIcon.classList.add(icon);
+    });
+    UiAlertIcon.classList.add('icon');
+    UiAlertIcon.style.color = setUI.textColor;
+
+    // UiAlert close button inside message block
+    let UiAlertCloseButton = document.createElement('i');
+    UiAlertCloseButton.classList.add('close');
+    UiAlertCloseButton.classList.add('icon');
+    UiAlertCloseButton.onclick = () => {
+        $(UiAlertContainer).remove();
+    };
+
+    // UiAlert text container inside message block
+    let UiAlertTextContainer = document.createElement('div');
+    UiAlertTextContainer.style.color = setUI.textColor;
+    UiAlertTextContainer.style.marginRight = '10px';
+    let introText = document.createElement('div');
+    introText.innerText = setUI.introText;
+    introText.classList.add('header');
+    let messageText = document.createElement('p');
+    messageText.innerText = setUI.messageText;
+
+    // append icon, close button and text into message block
+    UiAlertContainer.appendChild(UiAlertIcon);
+    UiAlertContainer.appendChild(UiAlertCloseButton);
+    UiAlertContainer.appendChild(UiAlertTextContainer);
+    UiAlertTextContainer.appendChild(introText);
+    UiAlertTextContainer.appendChild(messageText);
+
+    // search global positioning container and create if not exists
+    let UiAlertMessagesContainer = document.getElementsByClassName(`ui-alert-content-${setUI.position}`)[0];
+    if (typeof UiAlertMessagesContainer === 'undefined') {
+        UiAlertMessagesContainer = document.createElement('div');
+        UiAlertMessagesContainer.classList.add('ui-alert-content');
+        UiAlertMessagesContainer.classList.add(`ui-alert-content-${setUI.position}`);
+        document.body.appendChild(UiAlertMessagesContainer);
+    }
+    // append message block into global container
+    UiAlertMessagesContainer.appendChild(UiAlertContainer);
+
+    uiAlertShow(UiAlertContainer);
+    if (setUI.permanent === false) {
+        let timer = 0;
+        UiAlertContainer.onmouseenter = () => {
+            clearTimeout(timer);
+        };
+        UiAlertContainer.onmouseleave = () => {
+            uiAlertHide(UiAlertContainer);
+        };
+        uiAlertHide(UiAlertContainer);
+    }
+
+    function uiAlertShow(element) {
+        setTimeout(function () {
+            element.style.opacity = 1;
+        }, 300);
+    }
+
+    function uiAlertHide(element) {
+        setTimeout(function () {
+            $(element).remove();
+        }, (setUI.time * 1000));
+    }
+
+    function generateRandomString(length) {
+        let text = '';
+        const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        length = parseInt(length);
+        for (let i = 0; i < length; i++)
+            text += possible.charAt(Math.floor(Math.random() * possible.length));
+        return text;
+    }
+
+};

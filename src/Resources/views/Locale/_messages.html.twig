@@ -6,53 +6,75 @@
             </h2>
         </div>
         <div class="six wide column">
-            <div class="ui green inverted button tiny" style="float: right;" onclick="SyliusTranslationPlugin.addDomainMessage(jQuery('#addDomainMessageModal'));">
+            <div class="ui green inverted button tiny" style="float: right;" onclick="SyliusTranslationPlugin.showSetMessageModal($('#addDomainMessageModal'));">
                 <i class="add icon"></i>
                 Add
             </div>
         </div>
     </div>
     <div class="ui grid" id="domainMessagesContainer">
-        {#{% set translatedMessages = localeMessageCatalogue.getTranslatedMessages(domain) %}#}
-        {#{% set untranslatedMessages = localeMessageCatalogue.getUntranslatedMessages(domain) %}#}
-        {#{% set messages = customMessages | merge(untranslatedMessages, translatedMessages) %}#}
+        {% set showTranslated = false %}
+        {% set showUntranslated = true %}
+        {% set showCustom = true %}
 
-
-        {#{% set messages = localeMessageCatalogue.getMessages() %}#}
-        {#{% set customMessages = localeMessageCatalogue.getCustomMessages() %}#}
-        {#{% for messageDomain, translation in messages %}#}
-            {#{% set ifTranslated = translation | length > 0 %}#}
-            {#{% set showMessageDomain = messageDomain | truncate(50) %}#}
-            {#{% set messageDomainIsTruncated = false %}#}
-            {#{% set isCustom = messageDomain in customMessages | keys %}#}
-            {#{% if showMessageDomain | length != messageDomain | length %}#}
-                {#{% set messageDomainIsTruncated = true %}#}
-            {#{% endif %}#}
-            {#<div class="row" data-locale-code="{{ currentLocale.code }}" data-domain="{{ domain }}" data-message-domain="{{ messageDomain }}" data-translation="{{ translation }}">#}
-                {#<div class="six wide column message-domain">#}
-                    {#<div class="ui big label fluid"{% if messageDomainIsTruncated == true %} data-tooltip="{{ messageDomain }}" data-inverted="" data-position="top center"{% endif %}>#}
-                        {#{% if ifTranslated == true %}#}
-                            {#<i class="icon check circle outline green"></i>#}
-                            {#{% if isCustom == true %}#}
-                                {#<i class="icon cog teal"></i>#}
-                            {#{% endif %}#}
-                        {#{% else %}#}
-                            {#<i class="icon circle outline red"></i>#}
-                        {#{% endif %}#}
-                        {#{% if messageDomainIsTruncated == true %}#}
-                            {#<i class="icon ellipsis horizontal yellow"></i>#}
-                        {#{% endif %}#}
-                        {#<span class="fluid">{{ showMessageDomain }}</span>#}
-                    {#</div>#}
-                {#</div>#}
-                {#<div class="ten wide column">#}
-                    {#<div class="ui icon input fluid">#}
-                        {#<input class="translation_input" placeholder="{{ translation }}" value="{{ translation }}" type="text">#}
-                        {#<i class="edit link icon" onclick="SyliusTranslationPlugin.editTranslation(jQuery(this).parent().parent().parent());"></i>#}
-                    {#</div>#}
-                {#</div>#}
-            {#</div>#}
-        {#{% endfor %}#}
+        {% set translations = localeMessageCatalogue.all(domain) %}
+        {% set customTranslations = customMessageCatalogue.all(domain) %}
+        {% for id, emptyTranslation in fullMessageCatalogue.all(domain) %}
+            {% set show = true %}
+            {% set translation = '' %}
+            {% set isTranslated = id in translations | keys %}
+            {% if isTranslated == true %}
+                {% if showTranslated == false %}
+                    {% set show = false %}
+                {% endif %}
+                {% set translation = translations[id] %}
+            {% else %}
+                {% if showUntranslated == false %}
+                    {% set show = false %}
+                {% endif %}
+            {% endif %}
+            {% set isCustom = id in customTranslations | keys %}
+            {% if isCustom == true %}
+                {% if showCustom == false %}
+                    {% set show = false %}
+                {% endif %}
+                {% set translation = customTranslations[id] %}
+            {% endif %}
+            {% set showId = id | truncate(50) %}
+            {% set isIdTruncated = false %}
+            {% if showId | length != id | length %}
+                {% set isIdTruncated = true %}
+            {% endif %}
+            {% if show == true %}
+            <div class="row" data-locale-code="{{ currentLocale.code }}" data-domain="{{ domain }}"
+                 data-message-domain="{{ id }}" data-translation="{{ translation }}">
+                <div class="six wide column message-domain">
+                    <div class="ui big label fluid"{% if isIdTruncated == true %} data-tooltip="{{ id }}" data-inverted="" data-position="top center"{% endif %}>
+                        {% if isTranslated == true %}
+                            <i class="icon check circle outline green"></i>
+                            {% if isCustom == true %}
+                                <i class="icon cog teal"></i>
+                            {% endif %}
+                        {% else %}
+                            <i class="icon circle outline red"></i>
+                        {% endif %}
+                        {% if isIdTruncated == true %}
+                            <i class="icon ellipsis horizontal yellow"></i>
+                        {% endif %}
+                        <span class="fluid">{{ showId }}</span>
+                    </div>
+                </div>
+                <div class="ten wide column">
+                    <div class="ui icon input fluid">
+                        <input class="translation_input" placeholder="{{ translation }}" value="{{ translation }}"
+                               type="text">
+                        <i class="edit link icon"
+                           onclick="SyliusTranslationPlugin.editTranslation(jQuery(this).parent().parent().parent());"></i>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        {% endfor %}
     </div>
 </div>
 <div class="ui basic modal" id="addDomainMessageModal" data-locale-code="{{ currentLocale.code }}" data-domain="{{ domain }}">
@@ -64,9 +86,9 @@
             <div class="sixteen wide column">
                 <div class="ui labeled inverted input">
                     <div class="ui label">
-                        {{ 'message_domain'|trans([], pluginTranslationDomain, currentLocale.code) }}
+                        {{ 'translation_id'|trans([], pluginTranslationDomain, currentLocale.code) }}
                     </div>
-                    <input placeholder="message.domain" id="addDomainMessageModal_messageDomainInput" type="text">
+                    <input placeholder="id" id="addDomainMessageModal_translationIdInput" type="text">
                 </div>
             </div>
             <div class="sixteen wide column">

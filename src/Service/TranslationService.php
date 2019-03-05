@@ -162,8 +162,20 @@ class TranslationService
     public function findTranslation(string $id, string $domain = 'messages', ?Locale $locale = null): ?string
     {
         $syliusLocaleMessageCatalogue = $this->getSyliusLocaleMessageCatalogue($locale);
+        $translation = $syliusLocaleMessageCatalogue->getMessageCatalogue()->get($id, $domain);
+//        if(gettype($translation) === 'boolean')
+        if (true === $translation) {
+            return 'true';
+        }
+        if (false === $translation) {
+            return 'false';
+        }
 
-        return $syliusLocaleMessageCatalogue->getMessageCatalogue()->get($id, $domain) ?? $id;
+        if (is_string($translation) || is_null($translation)) {
+            return $translation;
+        }
+
+        return null;
     }
 
     /**

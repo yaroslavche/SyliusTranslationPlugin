@@ -5,13 +5,13 @@
                 {{ 'domains_list' | trans([], pluginTranslationDomain, defaultLocale.code) }}
             </h2>
         </div>
-        <div class="six wide column">
-            <div class="ui green inverted button tiny" style="float: right;"
-                 onclick="SyliusTranslationPlugin.addDomain(jQuery('#addDomainModal'));">
-                <i class="add icon"></i>
-                {{ 'add_domain' | trans([], pluginTranslationDomain, defaultLocale.code) }}
-            </div>
-        </div>
+        {#<div class="six wide column">#}
+            {#<div class="ui green inverted button tiny" style="float: right;"#}
+                 {#onclick="SyliusTranslationPlugin.addDomain(jQuery('#addDomainModal'));">#}
+                {#<i class="add icon"></i>#}
+                {#{{ 'add_domain' | trans([], pluginTranslationDomain, defaultLocale.code) }}#}
+            {#</div>#}
+        {#</div>#}
     </div>
     <div class="ui middle aligned list">
         <div class="item">
@@ -22,7 +22,7 @@
                 </div>
             </div>
         </div>
-        {% for domain in localeMessageCatalogue.getDomains() %}
+        {% for domain in fullMessageCatalogue.getDomains() %}
             {#{% set totalMessagesCount = fullMessageCatalogue.all(domain) | length %}#}
             {#{% set translatedMessagesCount = localeMessageCatalogue.all(domain) | length %}#}
             {#{% set untranslatedMessagesCount = totalMessagesCount - translatedMessagesCount %}#}

@@ -47,7 +47,6 @@ class SyliusLocaleMessageCatalogueService
      * SyliusLocaleMessageCatalogueService constructor
      *
      * @param TranslationService $translationService
-     * @param string $kernelRootDir
      * @param Locale|null $locale
      */
     public function __construct(TranslationService $translationService, ?Locale $locale = null)
