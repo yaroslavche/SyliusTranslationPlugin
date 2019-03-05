@@ -13,12 +13,8 @@ final class AdminMenuListener
     {
         $menu = $event->getMenu();
 
-        $translationSubmenu = $menu
-            ->addChild('translation')
-            ->setLabel('Translation')
-        ;
-
-        $translationSubmenu
+        $menu
+            ->getChild('configuration')
             ->addChild('translation_dashboard', ['route' => 'yaroslavche_sylius_translation_plugin_dashboard'])
             ->setLabel('Translation')
         ;

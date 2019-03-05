@@ -60,8 +60,8 @@ final class TranslationController extends AbstractController
         }
 
         $this->translationService->setCurrentLocale($locale);
-        $localeMessageCatalogue = $this->translationService->getLocaleMessageCatalogue($locale);
-        $domains = $localeMessageCatalogue->getDomains();
+        $syliusLocaleMessageCatalogue = $this->translationService->getSyliusLocaleMessageCatalogue($locale);
+        $domains = $syliusLocaleMessageCatalogue->getFullMessageCatalogue()->getDomains();
         if(!in_array($domain, $domains)) {
             /** @todo add flash message Domain $domain not found */
             return $this->dashboard();

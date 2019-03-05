@@ -15,9 +15,9 @@
     </div>
     <div class="ui middle aligned list">
         {% for domain in localeMessageCatalogue.getDomains() %}
-            {% set translatedMessagesCount = localeMessageCatalogue.getTranslatedMessages(domain) | length %}
-            {% set untranslatedMessagesCount = localeMessageCatalogue.getUntranslatedMessages(domain) | length %}
-            {% set totalMessagesCount = translatedMessagesCount + untranslatedMessagesCount %}
+            {% set totalMessagesCount = fullMessageCatalogue.all(domain) | length %}
+            {% set translatedMessagesCount = localeMessageCatalogue.all(domain) | length %}
+            {% set untranslatedMessagesCount = totalMessagesCount - translatedMessagesCount %}
             {% set domainTranslationProgress = (translatedMessagesCount / totalMessagesCount) * 100 %}
             <div class="item">
                 <i class="icon folder{% if selectedDomain is same as(domain) %} open teal{% endif %}"></i>

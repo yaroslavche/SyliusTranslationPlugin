@@ -21,7 +21,6 @@ services:
         autowire: true
         autoconfigure: true
         arguments:
-            $translator: '@translator'
             $locale: null
 
     Yaroslavche\SyliusTranslationPlugin\Service\SyliusLocaleMessageCatalogueService: '@yaroslavche_sylius_translation_plugin_locale_message_catalogue_service'

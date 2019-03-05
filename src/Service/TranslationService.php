@@ -6,13 +6,15 @@ namespace Yaroslavche\SyliusTranslationPlugin\Service;
 use Sylius\Component\Locale\Model\Locale;
 use Sylius\Component\Locale\Provider\LocaleProviderInterface;
 use Sylius\Component\Resource\Repository\RepositoryInterface;
-use Symfony\Contracts\Translation\TranslatorInterface;
+use Symfony\Component\Intl\Intl;
+use Symfony\Component\Translation\DataCollectorTranslator;
+use Symfony\Component\Translation\MessageCatalogue;
 
 class TranslationService
 {
     const PLUGIN_TRANSLATION_DOMAIN = 'YaroslavcheSyliusTranslationPlugin';
 
-    /** @var TranslatorInterface $translator */
+    /** @var DataCollectorTranslator $translator */
     private $translator;
 
     /** @var Locale $defaultLocale */
@@ -21,44 +23,62 @@ class TranslationService
     /** @var Locale $currentLocale */
     private $currentLocale;
 
-    /** @var Locale[] $locales */
-    private $locales;
+    /** @var Locale[] $syliusLocales */
+    private $syliusLocales;
 
-    /** @var array|SyliusLocaleMessageCatalogueService[$localeCode => $localeMessageCatalogue] $localeMessageCatalogues */
-    private $localeMessageCatalogues;
+    /** @var array|SyliusLocaleMessageCatalogueService[$localeCode => $syliusLocaleMessageCatalogue] $syliusLocaleMessageCatalogues */
+    private $syliusLocaleMessageCatalogues;
+
+    /** @var MessageCatalogue $fullMessageCatalogue */
+    private $fullMessageCatalogue;
 
     /**
      * TranslationService constructor.
-     * @param TranslatorInterface $translator
+     * @param DataCollectorTranslator $translator
      * @param LocaleProviderInterface $localeProvider
      * @param RepositoryInterface $localeRepository
      */
-    public function __construct(TranslatorInterface $translator, LocaleProviderInterface $localeProvider, RepositoryInterface $localeRepository)
-    {
+    public function __construct(
+        DataCollectorTranslator $translator,
+        LocaleProviderInterface $localeProvider,
+        RepositoryInterface $localeRepository
+    ) {
         $this->translator = $translator;
-        $this->locales = $localeRepository->findAll();
-        foreach ($this->locales as $locale) {
+        $this->syliusLocales = $localeRepository->findAll();
+        foreach ($this->syliusLocales as $locale) {
             $localeCode = $locale->getCode();
             if ($localeCode === $localeProvider->getDefaultLocaleCode()) {
                 $this->defaultLocale = $locale;
                 break;
             }
         }
+        $this->collectFullMessageCatalogue();
+        $this->collectSyliusLocaleMesageCatalogues();
         $this->setCurrentLocale($this->defaultLocale);
+    }
+
+    private function collectSyliusLocaleMesageCatalogues(bool $refresh = true)
+    {
+        if ($refresh) {
+            unset($this->syliusLocaleMessageCatalogues);
+        }
+        foreach ($this->getSyliusLocales() as $key => $locale) {
+            if (!$refresh && array_key_exists($locale->getCode(), $this->syliusLocaleMessageCatalogues ?? [])) {
+                continue;
+            }
+            $this->syliusLocaleMessageCatalogues[$locale->getCode()] = new SyliusLocaleMessageCatalogueService($this, $locale);
+        }
     }
 
     /**
      * @param Locale|null $locale
      * @return SyliusLocaleMessageCatalogueService
      */
-    public function getLocaleMessageCatalogue(?Locale $locale = null): SyliusLocaleMessageCatalogueService
+    public function getSyliusLocaleMessageCatalogue(?Locale $locale = null): SyliusLocaleMessageCatalogueService
     {
         $locale = $locale ?? $this->currentLocale;
-        if (!array_key_exists($locale->getCode(), $this->localeMessageCatalogues ?? [])) {
-            $this->localeMessageCatalogues[$locale->getCode()] = new SyliusLocaleMessageCatalogueService($this->translator, $locale);
-        }
 
-        return $this->localeMessageCatalogues[$locale->getCode()];
+        return $this->syliusLocaleMessageCatalogues[$locale->getCode()];
     }
 
     /**
@@ -87,8 +107,6 @@ class TranslationService
     public function setCurrentLocale(Locale $currentLocale): void
     {
         $this->currentLocale = $currentLocale;
-        $this->translator->setLocale($this->currentLocale->getCode());
-        $this->getLocaleMessageCatalogue($this->currentLocale);
     }
 
     /**
@@ -96,9 +114,17 @@ class TranslationService
      *
      * @return array|Locale[]
      */
-    public function getLocales()
+    public function getSyliusLocales()
     {
-        return $this->locales;
+        return $this->syliusLocales;
+    }
+
+    /**
+     * @return DataCollectorTranslator
+     */
+    public function getTranslator(): DataCollectorTranslator
+    {
+        return $this->translator;
     }
 
     /**
@@ -109,7 +135,7 @@ class TranslationService
      */
     public function findLocaleByCode(string $localeCode): ?Locale
     {
-        foreach ($this->locales as $key => $locale) {
+        foreach ($this->syliusLocales as $key => $locale) {
             if ($locale->getCode() === $localeCode) {
                 return $locale;
             }
@@ -128,9 +154,9 @@ class TranslationService
      */
     public function findTranslation(string $id, string $domain = 'messages', ?Locale $locale = null): ?string
     {
-        $localeMessageCatalogue = $this->getLocaleMessageCatalogue($locale);
+        $syliusLocaleMessageCatalogue = $this->getSyliusLocaleMessageCatalogue($locale);
 
-        return $localeMessageCatalogue->findTranslation($id, $domain) ?? $id;
+        return $syliusLocaleMessageCatalogue->getMessageCatalogue()->get($id, $domain) ?? $id;
     }
 
     /**
@@ -144,20 +170,40 @@ class TranslationService
      */
     public function setMessage(Locale $locale, string $id, string $translation, ?string $domain = 'messages'): bool
     {
-        $localeMessageCatalogue = $this->getLocaleMessageCatalogue($locale);
-        return $localeMessageCatalogue->setMessage($id, $translation, $domain);
+        $syliusLocaleMessageCatalogue = $this->getSyliusLocaleMessageCatalogue($locale);
+        $syliusLocaleMessageCatalogue->getCustomMessageCatalogue()->set($id, $translation, $domain);
+        $result = $syliusLocaleMessageCatalogue->save();
+
+        return $result;
     }
 
     /**
      * Add domain in current locale
      *
      * @param string $name
+     * @param string|null $id
      * @return bool
      */
-    public function addDomain(string $name): bool
+    public function addDomain(string $name, ?string $id = null): bool
     {
-        $localeMessageCatalogue = $this->getLocaleMessageCatalogue();
-        return $localeMessageCatalogue->addDomain($name);
+        $syliusLocaleMessageCatalogue = $this->getSyliusLocaleMessageCatalogue();
+        $syliusLocaleMessageCatalogue->getCustomMessageCatalogue()->set($id ?? $name . '_title', '', $name);
+        $result = $syliusLocaleMessageCatalogue->save();
+
+        return $result;
+    }
+
+    /**
+     * Get total messages count in $locale
+     *
+     * @param Locale|null $locale
+     * @return int
+     */
+    public function getTotalMessagesCount(Locale $locale = null): int
+    {
+        $syliusLocaleMessageCatalogue = $this->getSyliusLocaleMessageCatalogue($locale);
+
+        return $syliusLocaleMessageCatalogue->getTotalMessagesCount();
     }
 
     /**
@@ -166,23 +212,11 @@ class TranslationService
      * @param Locale|null $locale
      * @return int
      */
-    public function getTotalTranslatedCount(Locale $locale = null): int
+    public function getTotalTranslatedMessagesCount(Locale $locale = null): int
     {
-        $localeMessageCatalogue = $this->getLocaleMessageCatalogue($locale);
-        $this->setCurrentLocale($locale ?? $this->currentLocale);
-        return count($localeMessageCatalogue->getTranslatedMessages());
-    }
+        $syliusLocaleMessageCatalogue = $this->getSyliusLocaleMessageCatalogue($locale);
 
-    /**
-     * Get total untranslated messages count in $locale
-     *
-     * @param Locale|null $locale
-     * @return int
-     */
-    public function getTotalUntranslatedCount(Locale $locale = null): int
-    {
-        $localeMessageCatalogue = $this->getLocaleMessageCatalogue($locale);
-        return count($localeMessageCatalogue->getUntranslatedMessages());
+        return $syliusLocaleMessageCatalogue->getTotalTranslatedMessagesCount();
     }
 
     /**
@@ -193,8 +227,9 @@ class TranslationService
      */
     public function getTotalDomainCount(Locale $locale = null): int
     {
-        $localeMessageCatalogue = $this->getLocaleMessageCatalogue($locale);
-        return count($localeMessageCatalogue->getDomains());
+        $syliusLocaleMessageCatalogue = $this->getSyliusLocaleMessageCatalogue($locale);
+
+        return count($syliusLocaleMessageCatalogue->getFullMessageCatalogue()->getDomains());
     }
 
     /**
@@ -203,14 +238,68 @@ class TranslationService
      * @param Locale|null $locale
      * @return float
      */
-    public function calculateTranslationProgress(Locale $locale = null): float
+    public function calculateTranslationProgress(Locale $locale): float
     {
-        $translatedCount = $this->getTotalTranslatedCount($locale);
-        $untranslatedCount = $this->getTotalUntranslatedCount($locale);
-        $totalCount = $translatedCount + $untranslatedCount;
-        if ($totalCount === 0) {
+        $totalMessagesCount = $this->getTotalMessagesCount($locale);
+        $translatedMessagesCount = $this->getTotalTranslatedMessagesCount($locale);
+
+        if ($totalMessagesCount === 0) {
             return 0;
         }
-        return ($translatedCount / $totalCount) * 100;
+
+        return ($translatedMessagesCount / $totalMessagesCount) * 100;
+    }
+
+    /**
+     * Calculate total translation progress
+     *
+     * @param Locale|null $locale
+     * @return float
+     */
+    public function calculateTotalTranslationProgress(): float
+    {
+        $localesCount = 0;
+        $translationProgressSum = 0;
+
+        foreach ($this->getSyliusLocales() as $key => $locale) {
+            $translationProgressSum += $this->calculateTranslationProgress($locale);
+            $localesCount++;
+        }
+
+        if ($localesCount === 0) {
+            return 0;
+        }
+
+        return $translationProgressSum / $localesCount;
+    }
+
+    private function collectFullMessageCatalogue()
+    {
+        $this->fullMessageCatalogue = new MessageCatalogue($this->defaultLocale->getCode());
+        $languages = Intl::getLanguageBundle()->getLanguageNames();
+        foreach ($languages as $localeCode => $languageName) {
+            $localeMessageCatalogue = $this->translator->getCatalogue($localeCode);
+            if (null === $localeMessageCatalogue || null === $this->fullMessageCatalogue) {
+                continue;
+            }
+            foreach ($localeMessageCatalogue->all() as $domain => $translations) {
+                foreach ($translations as $id => $translation) {
+                    $this->fullMessageCatalogue->set($id, $translation, $domain);
+                }
+            }
+        }
+        foreach ($this->fullMessageCatalogue->all() as $domain => $translations) {
+            foreach ($translations as $id => $translation) {
+                $this->fullMessageCatalogue->set($id, '', $domain);
+            }
+        }
+    }
+
+    /**
+     * @return MessageCatalogue
+     */
+    public function getFullMessageCatalogue(): MessageCatalogue
+    {
+        return $this->fullMessageCatalogue;
     }
 }

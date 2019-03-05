@@ -8,7 +8,9 @@
     '%someData%': ''
 }, pluginTranslationDomain, defaultLocale.code) %}
 
-{% set localeMessageCatalogue = service.getLocaleMessageCatalogue(currentLocale) %}
+{% set localeMessageCatalogue = service.getSyliusLocaleMessageCatalogue(currentLocale).getMessageCatalogue() %}
+{% set customMessageCatalogue = service.getSyliusLocaleMessageCatalogue(currentLocale).getCustomMessageCatalogue() %}
+{% set fullMessageCatalogue = service.getSyliusLocaleMessageCatalogue(currentLocale).getFullMessageCatalogue() %}
 
 {% block content %}
     {% include 'YaroslavcheSyliusTranslationPlugin::_header.html.twig' %}

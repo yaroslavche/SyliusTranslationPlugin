@@ -16,41 +16,43 @@
         {#{% set translatedMessages = localeMessageCatalogue.getTranslatedMessages(domain) %}#}
         {#{% set untranslatedMessages = localeMessageCatalogue.getUntranslatedMessages(domain) %}#}
         {#{% set messages = customMessages | merge(untranslatedMessages, translatedMessages) %}#}
-        {% set messages = localeMessageCatalogue.getMessages() %}
-        {% set customMessages = localeMessageCatalogue.getCustomMessages() %}
-        {% for messageDomain, translation in messages %}
-            {% set ifTranslated = translation | length > 0 %}
-            {% set showMessageDomain = messageDomain | truncate(50) %}
-            {% set messageDomainIsTruncated = false %}
-            {% set isCustom = messageDomain in customMessages | keys %}
-            {% if showMessageDomain | length != messageDomain | length %}
-                {% set messageDomainIsTruncated = true %}
-            {% endif %}
-            <div class="row" data-locale-code="{{ currentLocale.code }}" data-domain="{{ domain }}" data-message-domain="{{ messageDomain }}" data-translation="{{ translation }}">
-                <div class="six wide column message-domain">
-                    <div class="ui big label fluid"{% if messageDomainIsTruncated == true %} data-tooltip="{{ messageDomain }}" data-inverted="" data-position="top center"{% endif %}>
-                        {% if ifTranslated == true %}
-                            <i class="icon check circle outline green"></i>
-                            {% if isCustom == true %}
-                                <i class="icon cog teal"></i>
-                            {% endif %}
-                        {% else %}
-                            <i class="icon circle outline red"></i>
-                        {% endif %}
-                        {% if messageDomainIsTruncated == true %}
-                            <i class="icon ellipsis horizontal yellow"></i>
-                        {% endif %}
-                        <span class="fluid">{{ showMessageDomain }}</span>
-                    </div>
-                </div>
-                <div class="ten wide column">
-                    <div class="ui icon input fluid">
-                        <input class="translation_input" placeholder="{{ translation }}" value="{{ translation }}" type="text">
-                        <i class="edit link icon" onclick="SyliusTranslationPlugin.editTranslation(jQuery(this).parent().parent().parent());"></i>
-                    </div>
-                </div>
-            </div>
-        {% endfor %}
+
+
+        {#{% set messages = localeMessageCatalogue.getMessages() %}#}
+        {#{% set customMessages = localeMessageCatalogue.getCustomMessages() %}#}
+        {#{% for messageDomain, translation in messages %}#}
+            {#{% set ifTranslated = translation | length > 0 %}#}
+            {#{% set showMessageDomain = messageDomain | truncate(50) %}#}
+            {#{% set messageDomainIsTruncated = false %}#}
+            {#{% set isCustom = messageDomain in customMessages | keys %}#}
+            {#{% if showMessageDomain | length != messageDomain | length %}#}
+                {#{% set messageDomainIsTruncated = true %}#}
+            {#{% endif %}#}
+            {#<div class="row" data-locale-code="{{ currentLocale.code }}" data-domain="{{ domain }}" data-message-domain="{{ messageDomain }}" data-translation="{{ translation }}">#}
+                {#<div class="six wide column message-domain">#}
+                    {#<div class="ui big label fluid"{% if messageDomainIsTruncated == true %} data-tooltip="{{ messageDomain }}" data-inverted="" data-position="top center"{% endif %}>#}
+                        {#{% if ifTranslated == true %}#}
+                            {#<i class="icon check circle outline green"></i>#}
+                            {#{% if isCustom == true %}#}
+                                {#<i class="icon cog teal"></i>#}
+                            {#{% endif %}#}
+                        {#{% else %}#}
+                            {#<i class="icon circle outline red"></i>#}
+                        {#{% endif %}#}
+                        {#{% if messageDomainIsTruncated == true %}#}
+                            {#<i class="icon ellipsis horizontal yellow"></i>#}
+                        {#{% endif %}#}
+                        {#<span class="fluid">{{ showMessageDomain }}</span>#}
+                    {#</div>#}
+                {#</div>#}
+                {#<div class="ten wide column">#}
+                    {#<div class="ui icon input fluid">#}
+                        {#<input class="translation_input" placeholder="{{ translation }}" value="{{ translation }}" type="text">#}
+                        {#<i class="edit link icon" onclick="SyliusTranslationPlugin.editTranslation(jQuery(this).parent().parent().parent());"></i>#}
+                    {#</div>#}
+                {#</div>#}
+            {#</div>#}
+        {#{% endfor %}#}
     </div>
 </div>
 <div class="ui basic modal" id="addDomainMessageModal" data-locale-code="{{ currentLocale.code }}" data-domain="{{ domain }}">
@@ -62,7 +64,7 @@
             <div class="sixteen wide column">
                 <div class="ui labeled inverted input">
                     <div class="ui label">
-                        {{ 'message_domain'|trans([], 'SyliusTranslationPlugin', currentLocale.code) }}
+                        {{ 'message_domain'|trans([], pluginTranslationDomain, currentLocale.code) }}
                     </div>
                     <input placeholder="message.domain" id="addDomainMessageModal_messageDomainInput" type="text">
                 </div>
@@ -70,7 +72,7 @@
             <div class="sixteen wide column">
                 <div class="ui labeled inverted input">
                     <div class="ui label">
-                        {{ 'translation'|trans([], 'SyliusTranslationPlugin', currentLocale.code) }}
+                        {{ 'translation'|trans([], pluginTranslationDomain, currentLocale.code) }}
                     </div>
                     <input placeholder="translation" id="addDomainMessageModal_translationInput" type="text">
                 </div>

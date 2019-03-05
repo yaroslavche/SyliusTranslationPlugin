@@ -1,11 +1,11 @@
 {% set currentLocale = service.getCurrentLocale() %}
 {% set defaultLocale = service.getDefaultLocale() %}
-{% set availableLocales = service.getLocales() %}
-{% set translatedCount = service.getTotalTranslatedCount() %}
-{% set untranslatedCount = service.getTotalUntranslatedCount() %}
-{% set totalCount = translatedCount + untranslatedCount %}
-{% set translationProgress = (translatedCount / totalCount) * 100 %}
-{% set domainCount = service.getTotalDomainCount() %}
+{% set availableLocales = service.getSyliusLocales() %}
+{% set totalMessagesCount = service.getTotalMessagesCount() %}
+{% set translatedMessagesCount = service.getTotalTranslatedMessagesCount() %}
+{% set untranslatedMessagesCount = totalMessagesCount - translatedMessagesCount %}
+{% set translationProgress = service.calculateTotalTranslationProgress() %}
+{% set domainsCount = service.getTotalDomainCount() %}
 
 
 {% import '@SyliusUi/Macro/flags.html.twig' as syliusUiFlags %}
@@ -26,7 +26,7 @@
         <div class="column">
             <div class="ui statistic">
                 <div class="value">
-                    {{ totalCount }}
+                    {{ totalMessagesCount }}
                 </div>
                 <div class="label">
                     {{ 'total_messages_count' | trans([], pluginTranslationDomain, currentLocale.code) }}
@@ -36,10 +36,10 @@
         <div class="column">
             <div class="ui statistic">
                 <div class="value">
-                    {{ domainCount }}
+                    {{ domainsCount }}
                 </div>
                 <div class="label">
-                    {{ 'domains' | trans([], pluginTranslationDomain, currentLocale.code) }}
+                    {{ 'domains_count' | trans([], pluginTranslationDomain, currentLocale.code) }}
                 </div>
             </div>
         </div>
@@ -49,7 +49,7 @@
                     {{ '%.2f' | format(translationProgress) }}%
                 </div>
                 <div class="label">
-                    {{ 'overall_progress' | trans([], pluginTranslationDomain, currentLocale.code) }}
+                    {{ 'translation_progress' | trans([], pluginTranslationDomain, currentLocale.code) }}
                 </div>
             </div>
         </div>
@@ -62,10 +62,12 @@
 {% for locale in availableLocales %}
     {% set isDefaultLocale = defaultLocale == locale %}
     {% set isCurrent = currentLocale == locale %}
-    {% set translatedCount = service.getTotalTranslatedCount(locale) %}
-    {% set untranslatedCount = service.getTotalUntranslatedCount(locale) %}
-    {% set totalCount = translatedCount + untranslatedCount %}
-    {% set translationProgress = (translatedCount / totalCount) * 100 %}
+
+    {% set totalMessagesCount = service.getTotalMessagesCount(locale) %}
+    {% set translatedMessagesCount = service.getTotalTranslatedMessagesCount(locale) %}
+    {% set untranslatedMessagesCount = totalMessagesCount - translatedMessagesCount %}
+    {% set translationProgress = service.calculateTranslationProgress(locale) %}
+    {% set domainsCount = service.getTotalDomainCount(locale) %}
 
     <div class="ui segment{% if isDefaultLocale %} default{% endif %}{% if isCurrent %} active{% endif %}">
         <div class="ui center aligned four column stackable divided grid">
@@ -83,20 +85,20 @@
             <div class="column">
                 <div class="ui statistic">
                     <div class="value">
-                        {{ translatedCount }}
+                        {{ translatedMessagesCount }}
                     </div>
                     <div class="label">
-                        {{ 'total_translated' | trans([], pluginTranslationDomain, currentLocale.code) }}
+                        {{ 'translated_messages_count' | trans([], pluginTranslationDomain, currentLocale.code) }}
                     </div>
                 </div>
             </div>
             <div class="column">
                 <div class="ui statistic">
                     <div class="value">
-                        {{ untranslatedCount }}
+                        {{ untranslatedMessagesCount }}
                     </div>
                     <div class="label">
-                        {{ 'total_untranslated' | trans([], pluginTranslationDomain, currentLocale.code) }}
+                        {{ 'untranslated_messages_count' | trans([], pluginTranslationDomain, currentLocale.code) }}
                     </div>
                 </div>
             </div>
@@ -106,7 +108,7 @@
                         {{ '%.2f' | format(translationProgress) }}%
                     </div>
                     <div class="label">
-                        {{ 'progress' | trans([], pluginTranslationDomain, currentLocale.code) }}
+                        {{ 'translation_progress' | trans([], pluginTranslationDomain, currentLocale.code) }}
                     </div>
                 </div>
             </div>

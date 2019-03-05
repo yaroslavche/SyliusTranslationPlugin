@@ -3,12 +3,14 @@
 namespace Yaroslavche\SyliusTranslationPlugin\Service;
 
 use Sylius\Component\Locale\Model\Locale;
+use Symfony\Component\Translation\DataCollectorTranslator;
 use Symfony\Component\Translation\MessageCatalogue;
-use Symfony\Contracts\Translation\TranslatorInterface;
+use Symfony\Component\Translation\MessageCatalogueInterface;
 
 class SyliusLocaleMessageCatalogueService
 {
-    private $translator;
+    /** @var DataCollectorTranslator $translationService */
+    private $translationService;
 
     /** @var Locale $locale */
     private $locale;
@@ -16,102 +18,115 @@ class SyliusLocaleMessageCatalogueService
     /** @var MessageCatalogue $messageCatalogue */
     private $messageCatalogue;
 
-    /** @var string[] $domains */
-    private $domains;
+    /** @var MessageCatalogue $customMessageCatalogue */
+    private $customMessageCatalogue;
 
-    /** @var array $translatedMessages */
-    private $translatedMessages;
+    /** @var MessageCatalogue $fullMessageCatalogue */
+    private $fullMessageCatalogue;
 
-    /** @var array $untranslatedMessages */
-    private $untranslatedMessages;
+    /** @var int $totalMessagesCount */
+    private $totalMessagesCount;
 
-    /** @var array $customMessages */
-    private $customMessages;
+    /** @var int $totalTranslatedMessagesCount */
+    private $totalTranslatedMessagesCount;
 
     /**
      * SyliusLocaleMessageCatalogueService constructor
      *
+     * @param TranslationService $translationService
      * @param Locale|null $locale
      */
-    public function __construct($translator, ?Locale $locale = null)
+    public function __construct(TranslationService $translationService, ?Locale $locale = null)
     {
-        $this->translator = $translator;
+        $this->translationService = $translationService;
         $this->locale = $locale;
-        $this->messageCatalogue = $this->translator->getCatalogue();
-        $this->domains = $this->messageCatalogue->getDomains();
+        $this->fullMessageCatalogue = $this->translationService->getFullMessageCatalogue();
+
+        $this->collectCustomMessageCatalogue();
+
+        $this->messageCatalogue = new MessageCatalogue($this->locale->getCode());
+        $localeCode = $this->locale->getCode();
+        if($localeCode === 'en_US') $localeCode = 'en';
+        $this->copyMessageCatalogue($this->translationService->getTranslator()->getCatalogue($localeCode), $this->messageCatalogue);
+        $this->copyMessageCatalogue($this->customMessageCatalogue, $this->messageCatalogue);
     }
 
-    private function loadMessageCatalogue()
+    private function copyMessageCatalogue(?MessageCatalogueInterface $source, ?MessageCatalogueInterface $destination)
     {
-//        $messageCatalogue = new MessageCatalogue($this->locale->getCode());
-//        $localeMessageCatalogue = null;
-//        $languages = Intl::getLanguageBundle()->getLanguageNames();
-//        foreach ($languages as $localeCode => $languageName) {
-//            $currentLocaleMessageCatalogue = $this->plugin->translator->getCatalogue($localeCode);
-//            if ($localeCode === $locale->getCode()) {
-//                $localeMessageCatalogue = $currentLocaleMessageCatalogue;
-//            }
-//            $messages = $currentLocaleMessageCatalogue->all();
-//            foreach ($messages as $domain => $translations) {
-//                $messageCatalogue->add($translations, $domain);
-//            }
-//        }
-//        $messages = $messageCatalogue->all();
-//        foreach ($messages as $domain => $translations) {
-//            foreach ($translations as $key => $translation) {
-//                $messageCatalogue->set($key, '', $domain);
-//            }
-//        }
-//        if (null !== $localeMessageCatalogue) {
-//            $messageCatalogue->addCatalogue($localeMessageCatalogue);
-//        }
-//        return $messageCatalogue;
-    }
-
-    public function getDomains(): array
-    {
-        return $this->domains;
-    }
-
-    public function getTranslatedMessages(?string $domain = null): array
-    {
-        if(null === $domain) {
-            // get all
-            return [];
+        if (null === $source || null === $destination) {
+            return;
         }
-        if(in_array($domain, $this->domains)) return $this->messageCatalogue->all($domain);
-        return [];
+        foreach ($source->all() as $domain => $translations) {
+            foreach ($translations as $id => $translation) {
+                $destination->set($id, $translation, $domain);
+            }
+        }
     }
 
-    public function getUntranslatedMessages(?string $domain = null): array
+    private function collectCustomMessageCatalogue()
     {
-        return ['message2' => '', 'test_message2' => ''];
+        dump('implement ' . __METHOD__);
+        $this->customMessageCatalogue = new MessageCatalogue($this->locale->getCode());
     }
 
-    public function getCustomMessages(?string $domain = null): array
+    public function getMessageCatalogue(): MessageCatalogue
     {
-        return ['message1' => '3', 'test_message3' => 'test'];
+        return $this->messageCatalogue;
     }
 
-    public function getMessages(): array
+    public function getCustomMessageCatalogue(): MessageCatalogue
     {
-        return array_merge($this->getTranslatedMessages() ?? [], $this->getUntranslatedMessages() ?? [], $this->getCustomMessages() ?? []);
+        return $this->customMessageCatalogue;
     }
 
-    public function setMessage(string $id, string $translation, ?string $domain = 'messages'): bool
+    public function getFullMessageCatalogue(): MessageCatalogue
     {
+        return $this->fullMessageCatalogue;
+    }
+
+    /**
+     * Get total messages count for locale
+     *
+     * @param bool $refresh
+     * @return int
+     */
+    public function getTotalMessagesCount(bool $refresh = false): int
+    {
+        if(null === $this->totalMessagesCount || $refresh)
+        {
+            $messages = [];
+            foreach ($this->fullMessageCatalogue->all() as $domain => $translations) {
+                $messages = array_merge($messages, $translations);
+            }
+            $this->totalMessagesCount = count($messages);
+        }
+
+        return $this->totalMessagesCount;
+    }
+
+    /**
+     * Get total translated messages count in $locale
+     *
+     * @param bool $refresh
+     * @return int
+     */
+    public function getTotalTranslatedMessagesCount(bool $refresh = false): int
+    {
+        if(null === $this->totalTranslatedMessagesCount || $refresh)
+        {
+            $messages = [];
+            foreach ($this->messageCatalogue->all() as $domain => $translations) {
+                $messages = array_merge($messages, $translations);
+            }
+            $this->totalTranslatedMessagesCount = count($messages);
+        }
+
+        return $this->totalTranslatedMessagesCount;
+    }
+
+    public function save(): bool
+    {
+        dump('implement ' . __METHOD__);
         return true;
-    }
-
-    public function addDomain(string $name): bool
-    {
-        return true;
-    }
-
-    public function findTranslation(string $id, ?string $domain = null): ?string
-    {
-        $domain = $domain ?? 'messages'; // ??=
-
-        return $domain . $id;
     }
 }
