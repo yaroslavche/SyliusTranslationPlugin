@@ -3,7 +3,11 @@
 namespace Yaroslavche\SyliusTranslationPlugin\Service;
 
 use Sylius\Component\Locale\Model\Locale;
+use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\Finder\Finder;
 use Symfony\Component\Translation\DataCollectorTranslator;
+use Symfony\Component\Translation\Loader\XliffFileLoader;
+use Symfony\Component\Translation\Loader\YamlFileLoader;
 use Symfony\Component\Translation\MessageCatalogue;
 use Symfony\Component\Translation\MessageCatalogueInterface;
 
@@ -30,23 +34,40 @@ class SyliusLocaleMessageCatalogueService
     /** @var int $totalTranslatedMessagesCount */
     private $totalTranslatedMessagesCount;
 
+    /** @var Filesystem $filesystem */
+    private $filesystem;
+
+    /** @var Finder $finder */
+    private $finder;
+
+    /** @var string $customTranslationsFormat */
+    private $customTranslationsFormat;
+
     /**
      * SyliusLocaleMessageCatalogueService constructor
      *
      * @param TranslationService $translationService
+     * @param string $kernelRootDir
      * @param Locale|null $locale
      */
     public function __construct(TranslationService $translationService, ?Locale $locale = null)
     {
         $this->translationService = $translationService;
-        $this->locale = $locale;
-        $this->fullMessageCatalogue = $this->translationService->getFullMessageCatalogue();
+        $this->locale = $locale ?? $this->translationService->getDefaultLocale();
 
+        $this->filesystem = new Filesystem();
+        $this->finder = new Finder();
+        $this->customTranslationsFormat = 'xliff';
         $this->collectCustomMessageCatalogue();
+
+        $this->fullMessageCatalogue = $this->translationService->getFullMessageCatalogue();
 
         $this->messageCatalogue = new MessageCatalogue($this->locale->getCode());
         $localeCode = $this->locale->getCode();
-        if($localeCode === 'en_US') $localeCode = 'en';
+        if ($localeCode === 'en_US') {
+            $localeCode = 'en';
+        }
+//        $this->copyMessageCatalogue($this->fullMessageCatalogue, $this->messageCatalogue);
         $this->copyMessageCatalogue($this->translationService->getTranslator()->getCatalogue($localeCode), $this->messageCatalogue);
         $this->copyMessageCatalogue($this->customMessageCatalogue, $this->messageCatalogue);
     }
@@ -65,8 +86,36 @@ class SyliusLocaleMessageCatalogueService
 
     private function collectCustomMessageCatalogue()
     {
-        dump('implement ' . __METHOD__);
         $this->customMessageCatalogue = new MessageCatalogue($this->locale->getCode());
+
+        $customMessagesPath = $this->translationService->getKernelRootDir() . '/translations/';
+        if ($_SERVER['APP_ENV'] === 'dev') {
+            $customMessagesPath = realpath(__DIR__ . '/../Resources/translations');
+        }
+
+        if ($this->filesystem->exists($customMessagesPath)) {
+            $translationFiles = $this->finder->files()->in($customMessagesPath);
+            /** @var \SplFileInfo $translationFile */
+            foreach ($translationFiles as $translationFile) {
+                list($domain, $localeCode, $format) = explode('.', $translationFile->getFilename());
+                if (strtolower($localeCode) !== strtolower($this->locale->getCode())) {
+                    continue;
+                }
+
+                $loader = null;
+                switch (strtolower($format)) {
+                    case 'yml':
+                    case 'yaml':
+                        $loader = new YamlFileLoader();
+                        break;
+                    case 'xliff':
+                        $loader = new XliffFileLoader();
+                }
+                if(null === $loader) continue;
+
+                $this->customMessageCatalogue = $loader->load($translationFile->getRealPath(), $localeCode, $domain);
+            }
+        }
     }
 
     public function getMessageCatalogue(): MessageCatalogue
@@ -92,13 +141,11 @@ class SyliusLocaleMessageCatalogueService
      */
     public function getTotalMessagesCount(bool $refresh = false): int
     {
-        if(null === $this->totalMessagesCount || $refresh)
-        {
-            $messages = [];
+        if (null === $this->totalMessagesCount || $refresh) {
+            $this->totalMessagesCount = 0;
             foreach ($this->fullMessageCatalogue->all() as $domain => $translations) {
-                $messages = array_merge($messages, $translations);
+                $this->totalMessagesCount += count($translations);
             }
-            $this->totalMessagesCount = count($messages);
         }
 
         return $this->totalMessagesCount;
@@ -112,13 +159,11 @@ class SyliusLocaleMessageCatalogueService
      */
     public function getTotalTranslatedMessagesCount(bool $refresh = false): int
     {
-        if(null === $this->totalTranslatedMessagesCount || $refresh)
-        {
-            $messages = [];
+        if (null === $this->totalTranslatedMessagesCount || $refresh) {
+            $this->totalTranslatedMessagesCount = 0;
             foreach ($this->messageCatalogue->all() as $domain => $translations) {
-                $messages = array_merge($messages, $translations);
+                $this->totalTranslatedMessagesCount += count($translations);
             }
-            $this->totalTranslatedMessagesCount = count($messages);
         }
 
         return $this->totalTranslatedMessagesCount;

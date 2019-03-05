@@ -9,6 +9,7 @@ use Sylius\Component\Resource\Repository\RepositoryInterface;
 use Symfony\Component\Intl\Intl;
 use Symfony\Component\Translation\DataCollectorTranslator;
 use Symfony\Component\Translation\MessageCatalogue;
+use Symfony\Component\Translation\MessageCatalogueInterface;
 
 class TranslationService
 {
@@ -32,17 +33,23 @@ class TranslationService
     /** @var MessageCatalogue $fullMessageCatalogue */
     private $fullMessageCatalogue;
 
+    /** @var string $kernelRootDir */
+    private $kernelRootDir;
+
     /**
      * TranslationService constructor.
      * @param DataCollectorTranslator $translator
      * @param LocaleProviderInterface $localeProvider
      * @param RepositoryInterface $localeRepository
+     * @param string $kernelRootDir
      */
     public function __construct(
         DataCollectorTranslator $translator,
         LocaleProviderInterface $localeProvider,
-        RepositoryInterface $localeRepository
+        RepositoryInterface $localeRepository,
+        string $kernelRootDir
     ) {
+        $this->kernelRootDir = $kernelRootDir;
         $this->translator = $translator;
         $this->syliusLocales = $localeRepository->findAll();
         foreach ($this->syliusLocales as $locale) {
@@ -301,5 +308,13 @@ class TranslationService
     public function getFullMessageCatalogue(): MessageCatalogue
     {
         return $this->fullMessageCatalogue;
+    }
+
+    /**
+     * @return string
+     */
+    public function getKernelRootDir(): string
+    {
+        return $this->kernelRootDir;
     }
 }
