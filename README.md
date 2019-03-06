@@ -13,9 +13,16 @@ In the admin panel view for each locale (enabled in the Sylius) shows how many m
 $ composer require yaroslavche/sylius-translation-plugin
 ```
 
-Import config
+Register bundle:
+```php
+# config/bundles.php
+
+Yaroslavche\SyliusTranslationPlugin\YaroslavcheSyliusTranslationPlugin::class => ['all' => true],
+```
+
+Import services:
 ```yaml
-# config/config.yml
+# config/services.yaml
 
 imports:
     # ...
@@ -24,7 +31,7 @@ imports:
 
 Import routing
 ```yaml
-# config/routing.yml
+# config/routes.yaml
 
 yaroslavche_sylius_translation_plugin:
     resource: "@YaroslavcheSyliusTranslationPlugin/Resources/config/admin_routing.yml"
@@ -33,7 +40,7 @@ yaroslavche_sylius_translation_plugin:
 Install assets and clear cache.
 ```bash
 $ yarn build
-$ bin/console sylius:assets:install
+$ bin/console assets:install
 $ bin/console cache:clear
 ```
 

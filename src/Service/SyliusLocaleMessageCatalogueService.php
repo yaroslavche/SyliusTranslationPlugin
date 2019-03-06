@@ -91,9 +91,6 @@ class SyliusLocaleMessageCatalogueService
         $this->customMessageCatalogue = new MessageCatalogue($this->locale->getCode());
 
         $customMessagesPath = $this->translationService->getKernelRootDir() . '/translations/';
-        if ($_SERVER['APP_ENV'] === 'dev') {
-            $customMessagesPath = realpath(__DIR__ . '/../Resources/translations');
-        }
 
         if ($this->filesystem->exists($customMessagesPath)) {
             $translationFiles = $this->finder->files()->in($customMessagesPath);
@@ -177,9 +174,6 @@ class SyliusLocaleMessageCatalogueService
     {
         try {
             $customMessagesPath = $this->translationService->getKernelRootDir() . '/translations/';
-            if ($_SERVER['APP_ENV'] === 'dev') {
-                $customMessagesPath = realpath(__DIR__ . '/../Resources/translations');
-            }
 
             $dumper = new XliffFileDumper();
             $writer = new TranslationWriter();
@@ -187,20 +181,30 @@ class SyliusLocaleMessageCatalogueService
             $writer->write($this->customMessageCatalogue, $this->customTranslationsFormat, ['path' => $customMessagesPath]);
 
             $translationCacheDir = sprintf('%s/translations', $this->translationService->getKernelCacheDir());
-            $this->filesystem->mkdir($translationCacheDir);
+            if (!$this->filesystem->exists($translationCacheDir)) {
+                /** @todo maybe not need */
+                $this->filesystem->mkdir($translationCacheDir);
+                $this->warmUpTranslationsCache($translationCacheDir);
+                return true;
+            }
             $files = $this->finder->files()->name('*.' . $this->locale->getCode() . '.*')->in($translationCacheDir);
             /** @var \SplFileInfo $file */
             foreach ($files as $file) {
                 $this->filesystem->remove($file->getRealPath());
             }
-            if ($this->translationService->getTranslator() instanceof WarmableInterface) {
-                /** @var WarmableInterface $translator */
-                $translator = $this->translationService->getTranslator();
-                $translator->warmUp($translationCacheDir);
-            }
+            $this->warmUpTranslationsCache($translationCacheDir);
             return true;
         } catch (\Exception $exception) {
             return false;
+        }
+    }
+
+    private function warmUpTranslationsCache(string $translationCacheDir)
+    {
+        if ($this->translationService->getTranslator() instanceof WarmableInterface) {
+            /** @var WarmableInterface $translator */
+            $translator = $this->translationService->getTranslator();
+            $translator->warmUp($translationCacheDir);
         }
     }
 }
