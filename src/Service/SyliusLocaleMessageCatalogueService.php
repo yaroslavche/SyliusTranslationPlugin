@@ -107,6 +107,7 @@ class SyliusLocaleMessageCatalogueService
                     case 'yaml':
                         $loader = new YamlFileLoader();
                         break;
+                    case 'xlf':
                     case 'xliff':
                         $loader = new XliffFileLoader();
                 }
@@ -180,22 +181,21 @@ class SyliusLocaleMessageCatalogueService
             $writer->addDumper($this->customTranslationsFormat, $dumper);
             $writer->write($messageCatalogue, $this->customTranslationsFormat, ['path' => $customMessagesPath]);
 
-            $translationCacheDir = sprintf('%s/translations', $this->translationService->getKernelCacheDir());
-            if (!$this->filesystem->exists($translationCacheDir)) {
-                /** @todo maybe not need */
-                $this->filesystem->mkdir($translationCacheDir);
-                $this->warmUpTranslationsCache($translationCacheDir);
-                return true;
-            }
-            $files = $this->finder->files()->name('*.' . $this->locale->getCode() . '.*')->in($translationCacheDir);
-            /** @var \SplFileInfo $file */
-            foreach ($files as $file) {
-                $this->filesystem->remove($file->getRealPath());
-            }
-            $this->warmUpTranslationsCache($translationCacheDir);
+//            $translationCacheDir = sprintf('%s/translations', $this->translationService->getKernelCacheDir());
+//            if (!$this->filesystem->exists($translationCacheDir)) {
+//                /** @todo maybe not need */
+//                $this->filesystem->mkdir($translationCacheDir);
+//                $this->warmUpTranslationsCache($translationCacheDir);
+//                return true;
+//            }
+//            $files = $this->finder->files()->name('*.' . $this->locale->getCode() . '.*')->in($translationCacheDir);
+//            /** @var \SplFileInfo $file */
+//            foreach ($files as $file) {
+//                $this->filesystem->remove($file->getRealPath());
+//            }
+//            $this->warmUpTranslationsCache($translationCacheDir);
             return true;
         } catch (\Exception $exception) {
-            dump($exception);
             return false;
         }
     }
