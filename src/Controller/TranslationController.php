@@ -68,8 +68,7 @@ final class TranslationController extends AbstractController
 
         return $this->render('@YaroslavcheSyliusTranslationPlugin/locale.html.twig', [
             'service' => $this->translationService,
-            'pluginTranslationDomain' => TranslationService::PLUGIN_TRANSLATION_DOMAIN,
-            'selectedDomain' => $domain
+            'pluginTranslationDomain' => TranslationService::PLUGIN_TRANSLATION_DOMAIN
         ]);
     }
 
@@ -141,23 +140,32 @@ final class TranslationController extends AbstractController
     }
 
     /**
-     * @param Request $request
+     * @param string|null $localeCode
      * @return JsonResponse
      */
-    public function addDomain(Request $request): JsonResponse
+    public function getTranslationMessageCatalogue(?string $localeCode = null): JsonResponse
     {
-        $name = $request->request->get('name', '');
-        if (empty($name)) {
-            $domainNameMustBeSetMessage = $this->translationService->findTranslation(
-                'domain_name_must_be_set',
+        $locale = null;
+        if (null === $localeCode) {
+            $locale = $this->translationService->getDefaultLocale();
+        } else {
+            $locale = $this->translationService->findLocaleByCode($localeCode);
+        }
+        if (null === $locale) {
+            $localeMustBeSetMessage = $this->translationService->findTranslation(
+                'locale_must_be_set',
                 TranslationService::PLUGIN_TRANSLATION_DOMAIN
             );
-            return new JsonResponse(['status' => 'error', 'message' => $domainNameMustBeSetMessage]);
+            return new JsonResponse(['status' => 'error', 'message' => $localeMustBeSetMessage]);
         }
 
         try {
-            $success = $this->translationService->addDomain($name);
-            return new JsonResponse(['added' => $success ? 'true' : 'false']);
+            $localeMessageCatalogue = array_merge(
+                $this->translationService->getFullMessageCatalogue()->all(),
+                $this->translationService->getSyliusLocaleMessageCatalogue($locale)->getMessageCatalogue()->all(),
+                $this->translationService->getSyliusLocaleMessageCatalogue($locale)->getCustomMessageCatalogue()->all()
+            );
+            return new JsonResponse(['status' => 'success', 'messageCatalogue' => $localeMessageCatalogue]);
         } catch (\Exception $exception) {
             $addDomainErrorMessage = $this->translationService->findTranslation(
                 'add_domain_message_error',

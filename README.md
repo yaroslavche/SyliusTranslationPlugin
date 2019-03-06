@@ -32,6 +32,7 @@ yaroslavche_sylius_translation_plugin:
 
 Install assets and clear cache.
 ```bash
+$ yarn build
 $ bin/console sylius:assets:install
 $ bin/console cache:clear
 ```

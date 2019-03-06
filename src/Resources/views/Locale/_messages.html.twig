@@ -63,9 +63,9 @@
     </div>
 </div>
 <div class="ui basic modal" id="addDomainMessageModal" data-locale-code="{{ currentLocale.code }}"
-     data-domain="{{ selectedDomain }}">
+     data-domain="messages">
     <div class="ui icon header">
-        Add new message in "{{ selectedDomain }}" domain for
+        Add new message in <span class="currentDomain">"messages"</span> domain for
         "{{ currentLocale.name|trans([], null, defaultLocale.code) }}"
         locale
     </div>

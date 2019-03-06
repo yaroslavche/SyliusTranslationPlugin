@@ -16,8 +16,17 @@
     {% include 'YaroslavcheSyliusTranslationPlugin::_header.html.twig' %}
     <div class="ui two column stackable grid">
         <div class="four wide column">
+            <div class="ui segment">
+                <div class="ui two column stackable grid">
+                    <div class="ten wide column">
+                        <a href="{{ path('yaroslavche_sylius_translation_plugin_dashboard') }}">
+                            Dashboard
+                            {#{{ 'translation_dashboard' | trans([], pluginTranslationDomain, defaultLocale.code) }}#}
+                        </a>
+                    </div>
+                </div>
+            </div>
             {% include 'YaroslavcheSyliusTranslationPlugin:Locale:_filter.html.twig' %}
-            {% include 'YaroslavcheSyliusTranslationPlugin:Locale:_domains.html.twig' %}
         </div>
         <div class="twelve wide column">
             {% include 'YaroslavcheSyliusTranslationPlugin:Locale:_messages.html.twig' %}

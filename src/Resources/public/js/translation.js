@@ -15,6 +15,7 @@ const SyliusTranslationPlugin = {
                 })
             });
             const response = await rawResponse.json();
+            if (response.status === 'success') this.applyFilters();
             this.showResponse(response);
         })();
     },
@@ -49,19 +50,29 @@ const SyliusTranslationPlugin = {
                         let
                             localeCode = modalContainer.data('locale-code'),
                             domain = modalContainer.data('domain'),
-                            translationIdInput = jQuery('#addDomainMessageModal_translationIdInput'),
-                            translationInput = jQuery('#addDomainMessageModal_translationInput');
-                        if (translationIdInput.length > 0 && translationInput.length > 0) {
-                            this.setMessage(localeCode, domain, translationIdInput.val(), translationInput.val());
+                            translationIdInput = document.getElementById('addDomainMessageModal_translationIdInput'),
+                            translationInput = document.getElementById('addDomainMessageModal_translationInput');
+                        if (translationIdInput.value.length > 0 && translationInput.value.length > 0) {
+                            this.setMessage(localeCode, domain, translationIdInput.value, translationInput.value);
                         }
                     }
                 }).modal('show');
     },
     selectDomain(domain) {
-        this.filterTranslations({'domain': domain});
-        let domainItems = document.getElementsByClassName('domain-item');
-        Array.from(domainItems).forEach((domainElement) => {
+        let domainElement = document.getElementById('filterDomain');
+        domainElement.value = domain;
+        this.applyFilters();
 
+        let domainFilterItems = document.getElementsByClassName('domain-item');
+        Array.from(domainFilterItems).forEach((element) => {
+            let iconElement = element.querySelector('.icon');
+            iconElement.classList.remove('open');
+            iconElement.classList.remove('teal');
+            if(element.getAttribute('data-domain') === domain)
+            {
+                iconElement.classList.add('open');
+                iconElement.classList.add('teal');
+            }
         });
     },
     applyFilters() {
@@ -86,6 +97,18 @@ const SyliusTranslationPlugin = {
             isUntranslated: true,
             isCustom: true
         }, filters);
+
+        let messageListTitle = document.getElementById('message_list_title');
+        let title = 'All ';
+        if (applyFilters.domain.length > 0) title = applyFilters.domain + ' ';
+        if (applyFilters.id.length > 0) title += applyFilters.id + ' ';
+        let flags = [];
+        if (applyFilters.isTranslated) flags.push('translated');
+        if (applyFilters.isUntranslated) flags.push('untranslated');
+        if (applyFilters.isCustom) flags.push('custom');
+        if (flags.length > 0) title += `(${flags.join(', ')})`;
+        messageListTitle.innerText = title;
+
         let translationRows = document.getElementsByClassName('translationRow');
         Array.from(translationRows).forEach((translationElement) => {
             translationElement.classList.remove('hidden');
@@ -117,10 +140,11 @@ const SyliusTranslationPlugin = {
         let localeCode = row.getAttribute('data-locale-code');
         let domain = row.getAttribute('data-domain');
         let id = row.getAttribute('data-id');
-        SyliusTranslationPlugin.setMessage(localeCode, domain, id, translation);
+        this.setMessage(localeCode, domain, id, translation);
     }
 };
 
+// todo: remove jquery dependency (uiAlert move to separate)
 jQuery(document).ready(function () {
     jQuery('.progress').progress();
     jQuery('.translation_input').keypress(function (e) {
@@ -128,7 +152,27 @@ jQuery(document).ready(function () {
             SyliusTranslationPlugin.editTranslation(this);
         }
     });
-    jQuery('#applyFilter').click();
+
+    // todo: load catalogue (/admin/translation/getMessageCatalogue ? {localeCode: 'en_US'}) if there is container exists
+
+    let filterDomainElement = document.getElementById('filterDomain');
+    let filterIdElement = document.getElementById('filterId');
+    let filterTranslatedElement = document.getElementById('filterTranslated');
+    let filterUntranslatedElement = document.getElementById('filterUntranslated');
+    let filterCustomElement = document.getElementById('filterCustom');
+
+    if (filterDomainElement) filterDomainElement.onchange = (event) => SyliusTranslationPlugin.applyFilters();
+    if (filterIdElement) filterIdElement.onchange = (event) => SyliusTranslationPlugin.applyFilters();
+    if (filterTranslatedElement) filterTranslatedElement.onchange = (event) => SyliusTranslationPlugin.applyFilters();
+    if (filterUntranslatedElement) filterUntranslatedElement.onchange = (event) => SyliusTranslationPlugin.applyFilters();
+    if (filterCustomElement) filterCustomElement.onchange = (event) => SyliusTranslationPlugin.applyFilters();
+    if (
+        filterDomainElement &&
+        filterIdElement &&
+        filterTranslatedElement &&
+        filterUntranslatedElement &&
+        filterCustomElement
+    ) SyliusTranslationPlugin.applyFilters();
 });
 
 jQuery.uiAlert = function (options) {

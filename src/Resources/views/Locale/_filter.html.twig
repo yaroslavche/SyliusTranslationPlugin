@@ -1,4 +1,4 @@
-<div class="ui segment">success
+<div class="ui segment">
     <div class="ui two column stackable grid">
         <div class="ten wide column">
             <h2 class="header">
@@ -10,12 +10,33 @@
         <div class="ui segment">
             <div class="field">
                 <label>Domain</label>
-                <select id="filterDomain" class="ui search dropdown">
-                    <option value=""></option>
+                {#<select id="filterDomain" class="ui search dropdown">#}
+                    {#<option value=""></option>#}
+                    {#{% for domain in fullMessageCatalogue.getDomains() %}#}
+                        {#<option value="{{ domain }}">{{ domain }}</option>#}
+                    {#{% endfor %}#}
+                {#</select>#}
+                <input id="filterDomain" type="hidden">
+                <div class="ui middle aligned list">
+                    <div class="item domain-item" data-domain="">
+                        <i class="icon folder"></i>
+                        <div class="content">
+                            <div class="header">
+                                <a onclick="SyliusTranslationPlugin.selectDomain('');">All</a>
+                            </div>
+                        </div>
+                    </div>
                     {% for domain in fullMessageCatalogue.getDomains() %}
-                        <option value="{{ domain }}">{{ domain }}</option>
+                        <div class="item domain-item" data-domain="{{ domain }}">
+                            <i class="icon folder"></i>
+                            <div class="content">
+                                <div class="header">
+                                    <a onclick="SyliusTranslationPlugin.selectDomain('{{ domain }}');">{{ domain }}</a>
+                                </div>
+                            </div>
+                        </div>
                     {% endfor %}
-                </select>
+                </div>
             </div>
             <div class="field">
                 <label>Id</label>
@@ -30,18 +51,20 @@
                 </div>
             </div>
             <div class="field">
-                <div class="ui toggle checkbox">
-                    <input id="filterUntranslated" type="checkbox" name="showUntranslated" tabindex="0" class="hidden">
+                <div class="ui toggle checkbox checked">
+                    <input id="filterUntranslated" type="checkbox" name="showUntranslated" checked="checked" tabindex="0" class="hidden">
                     <label for="filterUntranslated">Show Untranslated</label>
                 </div>
             </div>
             <div class="field">
-                <div class="ui toggle checkbox">
-                    <input id="filterCustom" type="checkbox" name="showCustom" tabindex="0" class="hidden">
+                <div class="ui toggle checkbox checked">
+                    <input id="filterCustom" type="checkbox" name="showCustom" checked="checked" tabindex="0" class="hidden">
                     <label for="filterCustom">Show Custom</label>
                 </div>
             </div>
         </div>
-        <div id="applyFilter" onclick="SyliusTranslationPlugin.applyFilters();" class="ui green inverted button tiny" tabindex="0">Filter</div>
+        {#<div id="applyFilter" onclick="SyliusTranslationPlugin.applyFilters();" class="ui green inverted button tiny"#}
+             {#tabindex="0">Filter#}
+        {#</div>#}
     </div>
 </div>
