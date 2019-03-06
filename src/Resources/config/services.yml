@@ -1,13 +1,43 @@
 services:
-    # plugin service
-    translation_plugin_service:
-        class: Acme\SyliusTranslationPlugin\Service\TranslationPlugin
-        calls:
-            - [setContainer, ['@service_container']]
-            - [init]
-
     # add menu via listener
     app.listener.admin.menu_builder:
-        class: Acme\SyliusTranslationPlugin\Listener\AdminMenuListener
+        class: Yaroslavche\SyliusTranslationPlugin\Listener\AdminMenuListener
         tags:
             - { name: kernel.event_listener, event: sylius.menu.admin.main, method: addAdminMenuItems }
+
+    # services
+    yaroslavche_sylius_translation_plugin_translation_service:
+        class: Yaroslavche\SyliusTranslationPlugin\Service\TranslationService
+        autowire: true
+        autoconfigure: true
+        arguments:
+            $translator: '@translator'
+            $localeRepository: '@sylius.repository.locale'
+            $kernelRootDir: '%kernel.root_dir%'
+            $kernelCacheDir: '%kernel.cache_dir%'
+
+    Yaroslavche\SyliusTranslationPlugin\Service\TranslationService: '@yaroslavche_sylius_translation_plugin_translation_service'
+
+    yaroslavche_sylius_translation_plugin_locale_message_catalogue_service:
+        class: Yaroslavche\SyliusTranslationPlugin\Service\SyliusLocaleMessageCatalogueService
+        autowire: true
+        autoconfigure: true
+        arguments:
+            $locale: null
+
+    Yaroslavche\SyliusTranslationPlugin\Service\SyliusLocaleMessageCatalogueService: '@yaroslavche_sylius_translation_plugin_locale_message_catalogue_service'
+
+    # controller
+    Yaroslavche\SyliusTranslationPlugin\Controller\TranslationController:
+        arguments:
+            $translationService: '@yaroslavche_sylius_translation_plugin_translation_service'
+        tags: ['controller.service_arguments']
+
+    # events
+    # show messages list in locale edit page. need filter by resource, can't extend BlockEventListener
+#    yaroslavche_sylius_translation_plugin_admin_locale_update_after_content:
+#        class: Sylius\Bundle\UiBundle\Block\BlockEventListener
+#        arguments:
+#            - '@@YaroslavcheSyliusTranslationPlugin/locale.html.twig'
+#        tags:
+#            - { name: kernel.event_listener, event: sylius.admin.locale.update.after_content, method: onBlockEvent }

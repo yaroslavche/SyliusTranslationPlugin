@@ -1,0 +1,70 @@
+<div class="ui segment">
+    <div class="ui two column stackable grid">
+        <div class="ten wide column">
+            <h2 class="header">
+                {{ 'filter_translation' | trans([], pluginTranslationDomain, defaultLocale.code) }}
+            </h2>
+        </div>
+    </div>
+    <div class="ui form">
+        <div class="ui segment">
+            <div class="field">
+                <label>Domain</label>
+                {#<select id="filterDomain" class="ui search dropdown">#}
+                    {#<option value=""></option>#}
+                    {#{% for domain in fullMessageCatalogue.getDomains() %}#}
+                        {#<option value="{{ domain }}">{{ domain }}</option>#}
+                    {#{% endfor %}#}
+                {#</select>#}
+                <input id="filterDomain" type="hidden">
+                <div class="ui middle aligned list">
+                    <div class="item domain-item" data-domain="">
+                        <i class="icon folder"></i>
+                        <div class="content">
+                            <div class="header">
+                                <a onclick="SyliusTranslationPlugin.selectDomain('');">All</a>
+                            </div>
+                        </div>
+                    </div>
+                    {% for domain in fullMessageCatalogue.getDomains() %}
+                        <div class="item domain-item" data-domain="{{ domain }}">
+                            <i class="icon folder"></i>
+                            <div class="content">
+                                <div class="header">
+                                    <a onclick="SyliusTranslationPlugin.selectDomain('{{ domain }}');">{{ domain }}</a>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="field">
+                <label>Id</label>
+                <input id="filterId" type="text" placeholder="sylius_available_locales">
+            </div>
+        </div>
+        <div class="ui segment">
+            <div class="field">
+                <div class="ui toggle checkbox">
+                    <input id="filterTranslated" type="checkbox" name="showTranslated" tabindex="0" class="hidden">
+                    <label for="filterTranslated">Show Translated</label>
+                </div>
+            </div>
+            <div class="field">
+                <div class="ui toggle checkbox checked">
+                    <input id="filterUntranslated" type="checkbox" name="showUntranslated" checked="checked" tabindex="0" class="hidden">
+                    <label for="filterUntranslated">Show Untranslated</label>
+                </div>
+            </div>
+            <div class="field">
+                <div class="ui toggle checkbox checked">
+                    <input id="filterCustom" type="checkbox" name="showCustom" checked="checked" tabindex="0" class="hidden">
+                    <label for="filterCustom">Show Custom</label>
+                </div>
+            </div>
+        </div>
+        {#<div id="applyFilter" onclick="SyliusTranslationPlugin.applyFilters();" class="ui green inverted button tiny"#}
+             {#tabindex="0">Filter#}
+        {#</div>#}
+    </div>
+</div>

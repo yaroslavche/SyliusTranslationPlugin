@@ -1,0 +1,2 @@
+yaroslavche_sylius_translation_admin:
+    resource: "@YaroslavcheSyliusTranslationPlugin/Resources/config/admin_routing.yml"

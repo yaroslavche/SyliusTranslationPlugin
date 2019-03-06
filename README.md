@@ -1,59 +1,47 @@
 ## Sylius Translation plugin
 
 The main goal of this plugin is to enable you to edit translation phrases, without having to manually create or modify translation files on the server. This plugin allows you to change any phrase that is in Silyus in admin panel. All custom translations are saved in the `xliff` format.
-![v0.1.0](http://i.piccy.info/i9/c90f0417438587733e28914ef33f8737/1526384347/174800/1243534/15052018_143822.png)
+![v0.2.0](http://i.piccy.info/i9/68769484bd712a8201b589d7e3583667/1551895248/166468/1305830/Screenshot_20190306_195601.png)
 
 
 In the admin panel view for each locale (enabled in the Sylius) shows how many messages have been translated, how many are left and translation progress.
-![v0.1.0](http://i.piccy.info/i9/a8186e675d18c9f4fdb96ef2bf67f612/1526384369/179348/1243534/15052018_143836.png)
-
-@dev:
-Adding your own domains and messages. If you need custom `blog` translation domain with `my_message` key - you can do it more easily. Just add to any locale and plugin show this phrase for other locales too (plugin collect all messages for all `Intl` languages as `fullMessageCatalogue`, even if it's not defined for selected locale).
-
-Planning: filter, search.
+![v0.2.0](http://i.piccy.info/i9/d48f5c7b2108cc2f27f7aa299c539139/1551895214/152581/1305830/Screenshot_20190306_195449.png)
 
 ## Installation
 
-Download
 ```bash
 $ composer require yaroslavche/sylius-translation-plugin
 ```
 
-register bundle
+Register bundle:
 ```php
-# app/AppKernel.php
+# config/bundles.php
 
-// ...
-public function registerBundles(): array
-{
-    return array_merge(parent::registerBundles(), [
-        // ...
-        new \Acme\SyliusTranslationPlugin\AcmeSyliusTranslationPlugin(),
-    ]);
-}
+Yaroslavche\SyliusTranslationPlugin\YaroslavcheSyliusTranslationPlugin::class => ['all' => true],
 ```
-import services
+
+Import services:
 ```yaml
-# app/config/config.yml
+# config/services.yaml
 
 imports:
     # ...
-    - { resource: "@AcmeSyliusTranslationPlugin/Resources/config/services.yml" }
+    - { resource: "@YaroslavcheSyliusTranslationPlugin/Resources/config/services.yml" }
 ```
 
-add routing
+Import routing
 ```yaml
-# app/config/routing.yml
+# config/routes.yaml
 
-acme_sylius_translation_plugin:
-    resource: "@AcmeSyliusTranslationPlugin/Resources/config/app/routing.yml"
+yaroslavche_sylius_translation_plugin:
+    resource: "@YaroslavcheSyliusTranslationPlugin/Resources/config/admin_routing.yml"
 ```
 
-and finally
+Install assets and clear cache.
 ```bash
-$ bin/console assets:install web -e dev
+$ yarn build
+$ bin/console assets:install
 $ bin/console cache:clear
-$ bin/console cache:warmup
-$ bin/console server:run
 ```
-Go to http://localhost:8000/admin/translation
+
+see on `/admin/translation/`
