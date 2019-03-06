@@ -1,4 +1,4 @@
-<div class="ui segment">
+<div class="ui segment">success
     <div class="ui two column stackable grid">
         <div class="ten wide column">
             <h2 class="header">
@@ -30,18 +30,18 @@
                 </div>
             </div>
             <div class="field">
-                <div class="ui toggle checkbox checked">
+                <div class="ui toggle checkbox">
                     <input id="filterUntranslated" type="checkbox" name="showUntranslated" tabindex="0" class="hidden">
                     <label for="filterUntranslated">Show Untranslated</label>
                 </div>
             </div>
             <div class="field">
-                <div class="ui toggle checkbox checked">
+                <div class="ui toggle checkbox">
                     <input id="filterCustom" type="checkbox" name="showCustom" tabindex="0" class="hidden">
                     <label for="filterCustom">Show Custom</label>
                 </div>
             </div>
         </div>
-        <div onclick="SyliusTranslationPlugin.applyFilters();" class="ui green inverted button tiny" tabindex="0">Filter</div>
+        <div id="applyFilter" onclick="SyliusTranslationPlugin.applyFilters();" class="ui green inverted button tiny" tabindex="0">Filter</div>
     </div>
 </div>

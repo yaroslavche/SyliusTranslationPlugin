@@ -35,8 +35,8 @@ const SyliusTranslationPlugin = {
         $.uiAlert({
             introText: response.status,
             messageText: response.message,
-            textColor: colors[response.status],
-            icon: icons[response.status],
+            textColor: colors[response.status] || '#ff5751',
+            icon: icons[response.status] || 'times circle',
             time: 5
         });
     },
@@ -111,7 +111,7 @@ const SyliusTranslationPlugin = {
     editTranslation(element) {
         let row = element.parentElement.parentElement.parentElement;
         let currentTranslation = row.getAttribute('data-translation');
-        let translation = this.value;
+        let translation = element.value;
         if (currentTranslation === translation) return;
 
         let localeCode = row.getAttribute('data-locale-code');
@@ -128,6 +128,7 @@ jQuery(document).ready(function () {
             SyliusTranslationPlugin.editTranslation(this);
         }
     });
+    jQuery('#applyFilter').click();
 });
 
 jQuery.uiAlert = function (options) {

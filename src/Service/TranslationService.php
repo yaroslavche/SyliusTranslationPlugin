@@ -36,20 +36,26 @@ class TranslationService
     /** @var string $kernelRootDir */
     private $kernelRootDir;
 
+    /** @var string $kernelRootDir */
+    private $kernelCacheDir;
+
     /**
      * TranslationService constructor.
      * @param DataCollectorTranslator $translator
      * @param LocaleProviderInterface $localeProvider
      * @param RepositoryInterface $localeRepository
      * @param string $kernelRootDir
+     * @param string $kernelCacheDir
      */
     public function __construct(
         DataCollectorTranslator $translator,
         LocaleProviderInterface $localeProvider,
         RepositoryInterface $localeRepository,
-        string $kernelRootDir
+        string $kernelRootDir,
+        string $kernelCacheDir
     ) {
         $this->kernelRootDir = $kernelRootDir;
+        $this->kernelCacheDir = $kernelCacheDir;
         $this->translator = $translator;
         $this->syliusLocales = $localeRepository->findAll();
         foreach ($this->syliusLocales as $locale) {
@@ -190,7 +196,13 @@ class TranslationService
     public function setMessage(Locale $locale, string $id, string $translation, ?string $domain = 'messages'): bool
     {
         $syliusLocaleMessageCatalogue = $this->getSyliusLocaleMessageCatalogue($locale);
-        $syliusLocaleMessageCatalogue->getCustomMessageCatalogue()->set($id, $translation, $domain);
+        $messageCatalogue = $syliusLocaleMessageCatalogue->getCustomMessageCatalogue();
+        $messageCatalogue->add([$id => $translation], $domain);
+        $messageCatalogue->setMetadata($id, ['notes' => [
+            ['category' => 'state', 'content' => 'new'],
+            ['category' => 'approved', 'content' => 'false'],
+            ['category' => 'section', 'content' => $domain, 'priority' => '1']
+        ]], $domain);
         $result = $syliusLocaleMessageCatalogue->save();
 
         return $result;
@@ -328,5 +340,13 @@ class TranslationService
     public function getKernelRootDir(): string
     {
         return $this->kernelRootDir;
+    }
+
+    /**
+     * @return string
+     */
+    public function getKernelCacheDir(): string
+    {
+        return $this->kernelCacheDir;
     }
 }

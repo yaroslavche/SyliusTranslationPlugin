@@ -53,8 +53,7 @@ final class TranslationController extends AbstractController
     public function locale(string $localeCode, string $domain = 'messages'): Response
     {
         $locale = $this->translationService->findLocaleByCode($localeCode);
-        if(null === $locale)
-        {
+        if (null === $locale) {
             /** @todo add flash message Locale must be set */
             return $this->dashboard();
         }
@@ -62,7 +61,7 @@ final class TranslationController extends AbstractController
         $this->translationService->setCurrentLocale($locale);
         $syliusLocaleMessageCatalogue = $this->translationService->getSyliusLocaleMessageCatalogue($locale);
         $domains = $syliusLocaleMessageCatalogue->getFullMessageCatalogue()->getDomains();
-        if(!in_array($domain, $domains)) {
+        if (!in_array($domain, $domains)) {
             /** @todo add flash message Domain $domain not found */
             return $this->dashboard();
         }
@@ -120,12 +119,18 @@ final class TranslationController extends AbstractController
 
         try {
             $success = $this->translationService->setMessage($locale, $id, $translation ?? '', $domain);
-            $messageIsSuccessfullySetMessage = $this->translationService->findTranslation(
-                'set_message_success',
-                TranslationService::PLUGIN_TRANSLATION_DOMAIN
-            );
-            dump($messageIsSuccessfullySetMessage);
-            return new JsonResponse(['status' => 'success', 'message' => $messageIsSuccessfullySetMessage]);
+            if ($success) {
+                $message = $this->translationService->findTranslation(
+                    'set_message_success',
+                    TranslationService::PLUGIN_TRANSLATION_DOMAIN
+                );
+            } else {
+                $message = $this->translationService->findTranslation(
+                    'set_message_failed',
+                    TranslationService::PLUGIN_TRANSLATION_DOMAIN
+                );
+            }
+            return new JsonResponse(['status' => $success ? 'success' : 'error', 'message' => $message]);
         } catch (\Exception $exception) {
             $setMessageErrorMessage = $this->translationService->findTranslation(
                 'set_message_error',

@@ -5,11 +5,14 @@ namespace Yaroslavche\SyliusTranslationPlugin\Service;
 use Sylius\Component\Locale\Model\Locale;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
+use Symfony\Component\HttpKernel\CacheWarmer\WarmableInterface;
 use Symfony\Component\Translation\DataCollectorTranslator;
+use Symfony\Component\Translation\Dumper\XliffFileDumper;
 use Symfony\Component\Translation\Loader\XliffFileLoader;
 use Symfony\Component\Translation\Loader\YamlFileLoader;
 use Symfony\Component\Translation\MessageCatalogue;
 use Symfony\Component\Translation\MessageCatalogueInterface;
+use Symfony\Component\Translation\Writer\TranslationWriter;
 
 class SyliusLocaleMessageCatalogueService
 {
@@ -110,7 +113,9 @@ class SyliusLocaleMessageCatalogueService
                     case 'xliff':
                         $loader = new XliffFileLoader();
                 }
-                if(null === $loader) continue;
+                if (null === $loader) {
+                    continue;
+                }
 
                 $this->customMessageCatalogue = $loader->load($translationFile->getRealPath(), $localeCode, $domain);
             }
@@ -170,7 +175,32 @@ class SyliusLocaleMessageCatalogueService
 
     public function save(): bool
     {
-        dump('implement ' . __METHOD__);
-        return true;
+        try {
+            $customMessagesPath = $this->translationService->getKernelRootDir() . '/translations/';
+            if ($_SERVER['APP_ENV'] === 'dev') {
+                $customMessagesPath = realpath(__DIR__ . '/../Resources/translations');
+            }
+
+            $dumper = new XliffFileDumper();
+            $writer = new TranslationWriter();
+            $writer->addDumper($this->customTranslationsFormat, $dumper);
+            $writer->write($this->customMessageCatalogue, $this->customTranslationsFormat, ['path' => $customMessagesPath]);
+
+            $translationCacheDir = sprintf('%s/translations', $this->translationService->getKernelCacheDir());
+            $this->filesystem->mkdir($translationCacheDir);
+            $files = $this->finder->files()->name('*.' . $this->locale->getCode() . '.*')->in($translationCacheDir);
+            /** @var \SplFileInfo $file */
+            foreach ($files as $file) {
+                $this->filesystem->remove($file->getRealPath());
+            }
+            if ($this->translationService->getTranslator() instanceof WarmableInterface) {
+                /** @var WarmableInterface $translator */
+                $translator = $this->translationService->getTranslator();
+                $translator->warmUp($translationCacheDir);
+            }
+            return true;
+        } catch (\Exception $exception) {
+            return false;
+        }
     }
 }
