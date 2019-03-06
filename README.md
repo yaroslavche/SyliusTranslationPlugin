@@ -1,86 +1,39 @@
-<p align="center">
-    <a href="https://sylius.com" target="_blank">
-        <img src="https://demo.sylius.com/assets/shop/img/logo.png" />
-    </a>
-</p>
+## Sylius Translation plugin
 
-<h1 align="center">Plugin Skeleton</h1>
+The main goal of this plugin is to enable you to edit translation phrases, without having to manually create or modify translation files on the server. This plugin allows you to change any phrase that is in Silyus in admin panel. All custom translations are saved in the `xliff` format.
+![v0.2.0](http://i.piccy.info/i9/5d080684d0be2362a42d8928e4641d94/1551832862/178409/1305830/Screenshot_20190306_023556.png)
 
-<p align="center">Skeleton for starting Sylius plugins.</p>
+
+In the admin panel view for each locale (enabled in the Sylius) shows how many messages have been translated, how many are left and translation progress.
+![v0.2.0](http://i.piccy.info/i9/768bda840331adc4a6eb55192259d2e3/1551832837/156671/1305830/Screenshot_20190306_023610.png)
 
 ## Installation
 
-1. Run `composer create-project sylius/plugin-skeleton ProjectName`.
+```bash
+$ composer require yaroslavche/sylius-translation-plugin
+```
 
-2. From the plugin skeleton root directory, run the following commands:
+Import config
+```yaml
+# config/config.yml
 
-    ```bash
-    $ (cd tests/Application && yarn install)
-    $ (cd tests/Application && yarn build)
-    $ (cd tests/Application && bin/console assets:install public -e test)
-    
-    $ (cd tests/Application && bin/console doctrine:database:create -e test)
-    $ (cd tests/Application && bin/console doctrine:schema:create -e test)
-    ```
+imports:
+    # ...
+    - { resource: "@YaroslavcheSyliusTranslationPlugin/Resources/config/services.yml" }
+```
 
-## Usage
+Import routing
+```yaml
+# config/routing.yml
 
-### Running plugin tests
+yaroslavche_sylius_translation_plugin:
+    resource: "@YaroslavcheSyliusTranslationPlugin/Resources/config/admin_routing.yml"
+```
 
-  - PHPUnit
+Install assets and clear cache.
+```bash
+$ bin/console sylius:assets:install
+$ bin/console cache:clear
+```
 
-    ```bash
-    $ vendor/bin/phpunit
-    ```
-
-  - PHPSpec
-
-    ```bash
-    $ vendor/bin/phpspec run
-    ```
-
-  - Behat (non-JS scenarios)
-
-    ```bash
-    $ vendor/bin/behat --tags="~@javascript"
-    ```
-
-  - Behat (JS scenarios)
- 
-    1. Download [Chromedriver](https://sites.google.com/a/chromium.org/chromedriver/)
-    
-    2. Download [Selenium Standalone Server](https://www.seleniumhq.org/download/).
-    
-    2. Run Selenium server with previously downloaded Chromedriver:
-    
-        ```bash
-        $ java -Dwebdriver.chrome.driver=chromedriver -jar selenium-server-standalone.jar
-        ```
-        
-    3. Run test application's webserver on `localhost:8080`:
-    
-        ```bash
-        $ (cd tests/Application && bin/console server:run localhost:8080 -d public -e test)
-        ```
-    
-    4. Run Behat:
-    
-        ```bash
-        $ vendor/bin/behat --tags="@javascript"
-        ```
-
-### Opening Sylius with your plugin
-
-- Using `test` environment:
-
-    ```bash
-    $ (cd tests/Application && bin/console sylius:fixtures:load -e test)
-    $ (cd tests/Application && bin/console server:run -d public -e test)
-    ```
-    
-- Using `dev` environment:
-
-    ```bash
-    $ (cd tests/Application && bin/console sylius:fixtures:load -e dev)
-    $ (cd tests/Application && bin/console server:run -d public -e dev)
-    ```
+see on `/admin/translation/`
