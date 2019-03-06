@@ -90,7 +90,7 @@ class SyliusLocaleMessageCatalogueService
     {
         $this->customMessageCatalogue = new MessageCatalogue($this->locale->getCode());
 
-        $customMessagesPath = $this->translationService->getKernelRootDir() . '/translations/';
+        $customMessagesPath = realpath($this->translationService->getKernelRootDir() . '/../translations/');
 
         if ($this->filesystem->exists($customMessagesPath)) {
             $translationFiles = $this->finder->files()->in($customMessagesPath);
@@ -170,15 +170,15 @@ class SyliusLocaleMessageCatalogueService
         return $this->totalTranslatedMessagesCount;
     }
 
-    public function save(): bool
+    public function save(MessageCatalogue $messageCatalogue): bool
     {
         try {
-            $customMessagesPath = $this->translationService->getKernelRootDir() . '/translations/';
+            $customMessagesPath = realpath($this->translationService->getKernelRootDir() . '/../translations/');
 
             $dumper = new XliffFileDumper();
             $writer = new TranslationWriter();
             $writer->addDumper($this->customTranslationsFormat, $dumper);
-            $writer->write($this->customMessageCatalogue, $this->customTranslationsFormat, ['path' => $customMessagesPath]);
+            $writer->write($messageCatalogue, $this->customTranslationsFormat, ['path' => $customMessagesPath]);
 
             $translationCacheDir = sprintf('%s/translations', $this->translationService->getKernelCacheDir());
             if (!$this->filesystem->exists($translationCacheDir)) {
@@ -195,6 +195,7 @@ class SyliusLocaleMessageCatalogueService
             $this->warmUpTranslationsCache($translationCacheDir);
             return true;
         } catch (\Exception $exception) {
+            dump($exception);
             return false;
         }
     }

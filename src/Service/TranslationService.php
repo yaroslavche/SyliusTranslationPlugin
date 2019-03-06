@@ -197,29 +197,26 @@ class TranslationService
     {
         $syliusLocaleMessageCatalogue = $this->getSyliusLocaleMessageCatalogue($locale);
         $messageCatalogue = $syliusLocaleMessageCatalogue->getCustomMessageCatalogue();
-        $messageCatalogue->add([$id => $translation], $domain);
-        $messageCatalogue->setMetadata($id, ['notes' => [
-            ['category' => 'state', 'content' => 'new'],
-            ['category' => 'approved', 'content' => 'false'],
-            ['category' => 'section', 'content' => $domain, 'priority' => '1']
-        ]], $domain);
-        $result = $syliusLocaleMessageCatalogue->save();
 
-        return $result;
-    }
-
-    /**
-     * Add domain in current locale
-     *
-     * @param string $name
-     * @param string|null $id
-     * @return bool
-     */
-    public function addDomain(string $name, ?string $id = null): bool
-    {
-        $syliusLocaleMessageCatalogue = $this->getSyliusLocaleMessageCatalogue();
-        $syliusLocaleMessageCatalogue->getCustomMessageCatalogue()->set($id ?? $name . '_title', '', $name);
-        $result = $syliusLocaleMessageCatalogue->save();
+        $metadata = [];
+        if ($messageCatalogue->has($id, $domain)) {
+            $messageCatalogue->set($id, $translation, $domain);
+            /** @todo getMetadata and update */
+//            $metadata = ['notes' => [
+//                ['category' => 'state', 'content' => 'updated'],
+//                ['category' => 'updated', 'content' => date('Y-m-d H:i:s')],
+//                ['category' => 'approved', 'content' => 'false'],
+//            ]];
+        } else {
+            $messageCatalogue->add([$id => $translation], $domain);
+            $metadata = ['notes' => [
+                ['category' => 'state', 'content' => 'new'],
+                ['category' => 'approved', 'content' => 'false'],
+                ['category' => 'section', 'content' => $domain, 'priority' => '1']
+            ]];
+        }
+        $messageCatalogue->setMetadata($id, $metadata, $domain);
+        $result = $syliusLocaleMessageCatalogue->save($messageCatalogue);
 
         return $result;
     }
