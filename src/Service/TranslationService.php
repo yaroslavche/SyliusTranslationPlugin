@@ -7,15 +7,14 @@ use Sylius\Component\Locale\Model\Locale;
 use Sylius\Component\Locale\Provider\LocaleProviderInterface;
 use Sylius\Component\Resource\Repository\RepositoryInterface;
 use Symfony\Component\Intl\Intl;
-use Symfony\Component\Translation\DataCollectorTranslator;
 use Symfony\Component\Translation\MessageCatalogue;
-use Symfony\Component\Translation\MessageCatalogueInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 class TranslationService
 {
     const PLUGIN_TRANSLATION_DOMAIN = 'YaroslavcheSyliusTranslationPlugin';
 
-    /** @var DataCollectorTranslator $translator */
+    /** @var TranslatorInterface $translator */
     private $translator;
 
     /** @var Locale $defaultLocale */
@@ -41,14 +40,14 @@ class TranslationService
 
     /**
      * TranslationService constructor.
-     * @param DataCollectorTranslator $translator
+     * @param TranslatorInterface $translator
      * @param LocaleProviderInterface $localeProvider
      * @param RepositoryInterface $localeRepository
      * @param string $kernelRootDir
      * @param string $kernelCacheDir
      */
     public function __construct(
-        DataCollectorTranslator $translator,
+        TranslatorInterface $translator,
         LocaleProviderInterface $localeProvider,
         RepositoryInterface $localeRepository,
         string $kernelRootDir,
@@ -133,9 +132,9 @@ class TranslationService
     }
 
     /**
-     * @return DataCollectorTranslator
+     * @return TranslatorInterface
      */
-    public function getTranslator(): DataCollectorTranslator
+    public function getTranslator(): TranslatorInterface
     {
         return $this->translator;
     }
