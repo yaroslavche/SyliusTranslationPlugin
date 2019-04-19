@@ -139,7 +139,9 @@
             },
             removeLocale() {
                 this.$store.dispatch('removeLocale', {localeCode: this.localeCode}).then(result => {
-                    if (result.status === 'error') {
+                    if (result.status === 'success') {
+                        this.$snotify.success(result.message);
+                    } else if (result.status === 'error') {
                         this.$snotify.error(result.message);
                     }
                 }, error => {

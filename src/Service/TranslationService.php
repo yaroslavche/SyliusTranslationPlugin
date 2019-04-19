@@ -92,11 +92,11 @@ class TranslationService
         /** @var Locale $locale */
         $locale = $this->localeRepository->findOneBy(['code' => $localeCode]);
         if ($locale instanceof Locale) {
-            throw new Exception('Locale already exists');
+            throw new Exception(sprintf('Locale "%s" already exists', $locale->getName()));
         }
         $locales = Intl::getLocaleBundle()->getLocales();
         if (!in_array($localeCode, $locales)) {
-            throw new Exception('Locale code not found');
+            throw new Exception(sprintf('Locale code "%s" not found', $localeCode));
         }
         $locale = new Locale();
         $locale->setCode($localeCode);
@@ -117,7 +117,7 @@ class TranslationService
             $this->localeRepository->remove($locale);
             return true;
         } catch (Exception $exception) {
-            throw new Exception(sprintf('Failed to remove locale %s', $localeCode));
+            throw new Exception(sprintf('Failed to remove locale code "%s"', $localeCode));
         }
     }
 }

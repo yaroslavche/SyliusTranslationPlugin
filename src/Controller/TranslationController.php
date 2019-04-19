@@ -11,6 +11,8 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Yaroslavche\SyliusTranslationPlugin\Service\TranslationService;
 
+use function Safe\sprintf;
+
 final class TranslationController extends AbstractController
 {
     /**
@@ -75,9 +77,10 @@ final class TranslationController extends AbstractController
         $requestLocaleCode = $request->request->get('localeCode');
         try {
             $locale = $this->translationService->addLocale($requestLocaleCode);
-            return $this->json(['status' => 'success', 'localeLanguageName' => $locale->getName()]);
+            $message = sprintf('Successfully added locale "%s" (%s)', $locale->getName(), $locale->getCode());
+            return $this->json(['status' => 'success', 'message' => $message, 'localeLanguageName' => $locale->getName()]);
         } catch (Exception $exception) {
-            $this->json(['status' => 'error', 'message' => $exception->getMessage()]);
+            return $this->json(['status' => 'error', 'message' => $exception->getMessage()]);
         }
     }
 
@@ -90,7 +93,8 @@ final class TranslationController extends AbstractController
         $requestLocaleCode = $request->request->get('localeCode');
         try {
             $this->translationService->removeLocale($requestLocaleCode);
-            return $this->json(['status' => 'success']);
+            $message = sprintf('Successfully removed locale code "%s"', $requestLocaleCode);
+            return $this->json(['status' => 'success', 'message' => $message]);
         } catch (Exception $exception) {
             return $this->json(['status' => 'error', 'message' => $exception->getMessage()]);
         }

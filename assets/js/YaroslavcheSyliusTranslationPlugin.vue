@@ -23,13 +23,15 @@
                 </YaroslavcheSyliusTranslationPluginDashboardLocale>
             </div>
             <div class="ui segment">
-                <div class="ui floating dropdown labeled search icon button" ref="newLocaleCode">
+                <!-- todo: make dropdown with Intl locales -->
+                <!--<div class="ui floating dropdown labeled search icon button">
                     <i class="world icon"></i>
                     <span class="text">Select Language</span>
                     <div class="menu">
                         <div class="item">Some list</div>
                     </div>
-                </div>
+                </div>-->
+                <input type="text" maxlength="5" ref="newLocaleCode">
                 <button class="ui primary button" @click="addLocale">Add</button>
             </div>
         </div>
@@ -83,9 +85,12 @@
                 this.$store.commit('setSelectedLocale', localeCode);
             },
             addLocale() {
+                // todo: check locale code: /[-_][a-z]+$/i
                 const payload = {localeCode: this.$refs.newLocaleCode.value};
                 this.$store.dispatch('addLocale', payload).then(result => {
-                    if (result.status === 'error') {
+                    if (result.status === 'success') {
+                        this.$snotify.success(result.message);
+                    } else if (result.status === 'error') {
                         this.$snotify.error(result.message);
                     }
                 }, error => {
