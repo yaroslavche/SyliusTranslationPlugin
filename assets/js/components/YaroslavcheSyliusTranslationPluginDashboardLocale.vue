@@ -4,16 +4,16 @@
             <div class="column">
                 <div class="ui statistic">
                     <div class="value locale">
+                        <div class="ui right internal attached rail">
+                            <button class="ui icon button removeLocale" @click="removeLocale">
+                                <i class="trash icon"></i>
+                            </button>
+                        </div>
                         <a class="link" @click="setSelectedLocale">{{ localeCode }}</a>
                     </div>
                     <div class="label">
                         {{ localeLanguageName }}
                     </div>
-                </div>
-                <div class="ui right internal attached rail">
-                    <button class="ui icon button removeLocale" @click="removeLocale">
-                        <i class="trash icon"></i>
-                    </button>
                 </div>
             </div>
             <div class="column">
@@ -162,5 +162,10 @@
     .removeLocale {
         float: right;
         margin: 0 !important;
+    }
+
+    .ui.attached.right.rail {
+        width: auto;
+        height: auto;
     }
 </style>

@@ -1,6 +1,17 @@
 <template>
     <div class="container-fluid">
         <vue-snotify></vue-snotify>
+        <div class="ui stackable grid">
+            <div class="column">
+                <h1 class="ui header">
+                    <i class="circular translate icon"></i>
+                    <div class="content">
+                        Translation
+                        <div class="sub header">YaroslavcheSyliusTranslationPlugin v0.3.0</div>
+                    </div>
+                </h1>
+            </div>
+        </div>
         <div v-show="selectedLocale.length === 0">
             <YaroslavcheSyliusTranslationPluginDashboardTotal></YaroslavcheSyliusTranslationPluginDashboardTotal>
             <div v-show="Object.keys(locales).length > 0">
