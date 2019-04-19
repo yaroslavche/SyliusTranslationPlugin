@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Yaroslavche\SyliusTranslationPlugin\Controller;
 
+use Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -63,5 +64,35 @@ final class TranslationController extends AbstractController
             return $this->json(['status' => 'error', 'message' => 'get_message_catalogue_failed']);
         }
         return $this->json(['status' => 'success', 'messageCatalogue' => $messageCatalogue->all()]);
+    }
+
+    /**
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function addLocale(Request $request): JsonResponse
+    {
+        $requestLocaleCode = $request->request->get('localeCode');
+        try {
+            $locale = $this->translationService->addLocale($requestLocaleCode);
+            return $this->json(['status' => 'success', 'localeLanguageName' => $locale->getName()]);
+        } catch (Exception $exception) {
+            $this->json(['status' => 'error', 'message' => $exception->getMessage()]);
+        }
+    }
+
+    /**
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function removeLocale(Request $request): JsonResponse
+    {
+        $requestLocaleCode = $request->request->get('localeCode');
+        try {
+            $this->translationService->removeLocale($requestLocaleCode);
+            return $this->json(['status' => 'success']);
+        } catch (Exception $exception) {
+            return $this->json(['status' => 'error', 'message' => $exception->getMessage()]);
+        }
     }
 }

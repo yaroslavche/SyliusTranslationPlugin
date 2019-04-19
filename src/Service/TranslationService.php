@@ -3,11 +3,14 @@ declare(strict_types=1);
 
 namespace Yaroslavche\SyliusTranslationPlugin\Service;
 
+use Exception;
 use Sylius\Component\Locale\Model\Locale;
 use Sylius\Component\Resource\Repository\RepositoryInterface;
 use Symfony\Component\Intl\Intl;
 use Symfony\Component\Translation\MessageCatalogue;
 use Symfony\Contracts\Translation\TranslatorInterface;
+
+use function \Safe\sprintf;
 
 class TranslationService
 {
@@ -71,10 +74,50 @@ class TranslationService
                 unset($localeMessageCatalogue);
             }
         } else {
+            if ($localeCode === 'en_US') $localeCode = 'en';
             if (in_array($localeCode, $locales)) {
                 $messageCatalogue = $this->translator->getCatalogue($localeCode);
             }
         }
         return $messageCatalogue;
+    }
+
+    /**
+     * @param string $localeCode
+     * @return Locale|null
+     * @throws Exception
+     */
+    public function addLocale(string $localeCode): ?Locale
+    {
+        /** @var Locale $locale */
+        $locale = $this->localeRepository->findOneBy(['code' => $localeCode]);
+        if ($locale instanceof Locale) {
+            throw new Exception('Locale already exists');
+        }
+        $locales = Intl::getLocaleBundle()->getLocales();
+        if (!in_array($localeCode, $locales)) {
+            throw new Exception('Locale code not found');
+        }
+        $locale = new Locale();
+        $locale->setCode($localeCode);
+        $this->localeRepository->add($locale);
+        return $locale;
+    }
+
+    /**
+     * @param string $localeCode
+     * @return bool|null
+     * @throws Exception
+     */
+    public function removeLocale(string $localeCode): ?bool
+    {
+        /** @var Locale $locale */
+        $locale = $this->localeRepository->findOneBy(['code' => $localeCode]);
+        try {
+            $this->localeRepository->remove($locale);
+            return true;
+        } catch (Exception $exception) {
+            throw new Exception(sprintf('Failed to remove locale %s', $localeCode));
+        }
     }
 }

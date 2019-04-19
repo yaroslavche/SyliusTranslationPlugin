@@ -18,12 +18,18 @@ yaroslavche_sylius_translation_plugin_get_message_catalogue:
   path:     /admin/translation/getMessageCatalogue
   methods: ['POST']
   controller: Yaroslavche\SyliusTranslationPlugin\Controller\TranslationController::getMessageCatalogue
-  requirements:
-    localeCode: '^[a-z]{2,3}(?:_[A-Z]{2})?$'
-  defaults:
-    localeCode: null
 
-#yaroslavche_sylius_translation_plugin_add_locale:
-#    path:     /admin/translation/addLocale
-#    methods: ['POST']
-#    controller: Yaroslavche\SyliusTranslationPlugin\Controller\TranslationController::addLocale
+yaroslavche_sylius_translation_plugin_add_locale:
+    path:     /admin/translation/addLocale
+    methods: ['POST']
+    controller: Yaroslavche\SyliusTranslationPlugin\Controller\TranslationController::addLocale
+
+yaroslavche_sylius_translation_plugin_remove_locale:
+    path:     /admin/translation/removeLocale
+    methods: ['POST']
+    controller: Yaroslavche\SyliusTranslationPlugin\Controller\TranslationController::removeLocale
+
+yaroslavche_sylius_translation_plugin_add_domain:
+  path:     /admin/translation/addDomain
+  methods: ['POST']
+  controller: Yaroslavche\SyliusTranslationPlugin\Controller\TranslationController::addDomain

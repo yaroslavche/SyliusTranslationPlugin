@@ -3,7 +3,16 @@ import YaroslavcheSyliusTranslationPlugin from './YaroslavcheSyliusTranslationPl
 import {store} from './store';
 
 Vue.config.productionTip = false;
+
 require('vue-snotify/styles/material.css');
+import Snotify, {SnotifyPosition} from 'vue-snotify';
+const options = {
+    toast: {
+        position: SnotifyPosition.leftTop,
+        timeout: 7000
+    }
+};
+Vue.use(Snotify, options);
 
 window.onload = () => {
     const vm = new Vue({

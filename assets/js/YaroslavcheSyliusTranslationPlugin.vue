@@ -1,15 +1,25 @@
 <template>
-    <div>
+    <div class="container-fluid">
+        <vue-snotify></vue-snotify>
         <div v-show="selectedLocale.length === 0">
-            <!-- dashboard total-->
+            <YaroslavcheSyliusTranslationPluginDashboardTotal></YaroslavcheSyliusTranslationPluginDashboardTotal>
             <div v-show="Object.keys(locales).length > 0">
-                <div class="ui segment"
-                     v-for="(languageName, localeCode) in locales"
-                     :key="localeCode"
+                <YaroslavcheSyliusTranslationPluginDashboardLocale
+                        v-for="(languageName, localeCode) in locales"
+                        :localeCode="localeCode"
+                        :key="localeCode"
                 >
-                    <YaroslavcheSyliusTranslationPluginDashboardLocale :localeCode="localeCode">
-                    </YaroslavcheSyliusTranslationPluginDashboardLocale>
+                </YaroslavcheSyliusTranslationPluginDashboardLocale>
+            </div>
+            <div class="ui segment">
+                <div class="ui floating dropdown labeled search icon button" ref="newLocaleCode">
+                    <i class="world icon"></i>
+                    <span class="text">Select Language</span>
+                    <div class="menu">
+                        <div class="item">Some list</div>
+                    </div>
                 </div>
+                <button class="ui primary button" @click="addLocale">Add</button>
             </div>
         </div>
         <div v-show="selectedLocale.length > 0">
@@ -32,28 +42,20 @@
                 </div>
             </div>
         </div>
-        <vue-snotify></vue-snotify>
     </div>
 </template>
 
 <script>
-    import Vue from 'vue';
     import {mapGetters} from 'vuex';
-    import Snotify, {SnotifyPosition} from 'vue-snotify';
     import YaroslavcheSyliusTranslationPluginDashboardLocale
         from './components/YaroslavcheSyliusTranslationPluginDashboardLocale';
-
-    const options = {
-        toast: {
-            position: SnotifyPosition.rightTop
-        }
-    };
-
-    Vue.use(Snotify, options);
+    import YaroslavcheSyliusTranslationPluginDashboardTotal
+        from './components/YaroslavcheSyliusTranslationPluginDashboardTotal';
 
     export default {
         name: 'YaroslavcheSyliusTranslationPlugin',
         components: {
+            YaroslavcheSyliusTranslationPluginDashboardTotal,
             YaroslavcheSyliusTranslationPluginDashboardLocale
         },
         computed: {
@@ -68,6 +70,16 @@
         methods: {
             setSelectedLocale(localeCode) {
                 this.$store.commit('setSelectedLocale', localeCode);
+            },
+            addLocale() {
+                const payload = {localeCode: this.$refs.newLocaleCode.value};
+                this.$store.dispatch('addLocale', payload).then(result => {
+                    if (result.status === 'error') {
+                        this.$snotify.error(result.message);
+                    }
+                }, error => {
+                    this.$snotify.error(error.message);
+                });
             }
         },
         created() {

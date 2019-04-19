@@ -6,9 +6,9 @@ Vue.use(Vuex);
 
 export const store = new Vuex.Store({
     state: {
-        locales: [],
-        fullMessageCatalogue: [],
-        totalMessagesCount: 0,
+        locales: {},
+        fullMessageCatalogue: {},
+        totalMessagesCount: null,
         messageCatalogues: [],
         selectedLocale: '',
         selectedDomain: ''
@@ -51,8 +51,8 @@ export const store = new Vuex.Store({
                         Object.keys(locales).forEach(localeCode => {
                             context.dispatch('fetchMessageCatalogue', {localeCode});
                         });
-                        resolve(response.data);
                     }
+                    resolve(response.data);
                 }, error => {
                     reject(error);
                 });
@@ -70,15 +70,45 @@ export const store = new Vuex.Store({
                                 totalMessagesCount += Object.keys(fullMessageCatalogue[domain]).length;
                             });
                             context.state.totalMessagesCount = totalMessagesCount;
-                        } else if(typeof payload.localeCode === 'string') {
+                        } else if (typeof payload.localeCode === 'string') {
                             Vue.set(context.state.messageCatalogues, payload.localeCode, response.data.messageCatalogue);
                         }
-                        resolve(response.data);
                     }
+                    resolve(response.data);
                 }, error => {
                     reject(error);
                 });
             });
-        }
+        },
+        addLocale: async (context, payload) => {
+            return new Promise((resolve, reject) => {
+                axios.post('/admin/translation/addLocale', {localeCode: payload.localeCode}).then(response => {
+                    if (response.data.status === 'success') {
+                        Vue.set(context.state.locales, payload.localeCode, response.data.localeLanguageName);
+                        context.dispatch('fetchMessageCatalogue', {localeCode: payload.localeCode});
+                    }
+                    resolve(response.data);
+                }, error => {
+                    reject(error);
+                });
+            });
+        },
+        removeLocale: async (context, payload) => {
+            return new Promise((resolve, reject) => {
+                if (!Object.keys(context.state.locales).includes(payload.localeCode)) {
+                    reject({message: `Locale code ${payload.localeCode} not found`});
+                    return;
+                }
+                axios.post('/admin/translation/removeLocale', {localeCode: payload.localeCode}).then(response => {
+                    if (response.data.status === 'success') {
+                        Vue.delete(context.state.locales, payload.localeCode);
+                        Vue.delete(context.state.messageCatalogues, payload.localeCode);
+                    }
+                    resolve(response.data);
+                }, error => {
+                    reject(error);
+                });
+            });
+        },
     }
 });
