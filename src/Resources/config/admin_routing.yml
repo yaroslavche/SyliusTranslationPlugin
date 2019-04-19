@@ -1,32 +1,27 @@
 #frontend
 yaroslavche_sylius_translation_plugin_dashboard:
-    path:     /admin/translation/
-    controller: Yaroslavche\SyliusTranslationPlugin\Controller\TranslationController::dashboard
-
-yaroslavche_sylius_translation_plugin_locale:
-    path:     /admin/translation/{localeCode}/{domain}
-    controller: Yaroslavche\SyliusTranslationPlugin\Controller\TranslationController::locale
-    requirements:
-        localeCode: '^[a-z]{2,3}(?:_[A-Z]{2})?$'
-        domain: '.+'
-    defaults:
-        domain: 'messages'
-
+  path:     /admin/translation/
+  controller: Yaroslavche\SyliusTranslationPlugin\Controller\TranslationController::dashboard
 
 # ajax
 yaroslavche_sylius_translation_plugin_set_message:
-    path:     /admin/translation/setMessage
-    methods: ['POST']
-    controller: Yaroslavche\SyliusTranslationPlugin\Controller\TranslationController::setMessage
+  path:     /admin/translation/setMessage
+  methods: ['POST']
+  controller: Yaroslavche\SyliusTranslationPlugin\Controller\TranslationController::setMessage
+
+yaroslavche_sylius_translation_plugin_get_locales:
+  path:     /admin/translation/getLocales
+  methods: ['GET']
+  controller: Yaroslavche\SyliusTranslationPlugin\Controller\TranslationController::getLocales
 
 yaroslavche_sylius_translation_plugin_get_message_catalogue:
-    path:     /admin/translation/getMessageCatalogue
-    methods: ['POST', 'GET']
-    controller: Yaroslavche\SyliusTranslationPlugin\Controller\TranslationController::getTranslationMessageCatalogue
-    requirements:
-        localeCode: '^[a-z]{2,3}(?:_[A-Z]{2})?$'
-    defaults:
-        localeCode: null
+  path:     /admin/translation/getMessageCatalogue
+  methods: ['POST']
+  controller: Yaroslavche\SyliusTranslationPlugin\Controller\TranslationController::getMessageCatalogue
+  requirements:
+    localeCode: '^[a-z]{2,3}(?:_[A-Z]{2})?$'
+  defaults:
+    localeCode: null
 
 #yaroslavche_sylius_translation_plugin_add_locale:
 #    path:     /admin/translation/addLocale
