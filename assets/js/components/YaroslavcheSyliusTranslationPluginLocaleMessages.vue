@@ -162,7 +162,7 @@
                             if (this.filter.showTranslated && !isTranslatedMessage) return;
                             if (this.filter.showUntranslated && isTranslatedMessage) return;
                         }
-                        if (this.filter.showTranslated && this.filter.showCustom && !isCustomMessage) return;
+                        if (this.filter.showCustom && isTranslatedMessage && !isCustomMessage) return;
 
                         messages[id] = {
                             id: id.substring(0, this.idMaxLength),
