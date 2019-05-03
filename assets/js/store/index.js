@@ -75,23 +75,22 @@ export const store = new Vuex.Store({
                 });
             });
         },
+        calculateTotalMessagesCount: (context) => {
+            let totalMessagesCount = 0;
+            Object.keys(context.state.fullMessageCatalogue).forEach(domain => {
+                totalMessagesCount += Object.keys(context.state.fullMessageCatalogue[domain]).length;
+            });
+            context.state.totalMessagesCount = totalMessagesCount;
+        },
         fetchMessageCatalogue: async (context, payload) => {
             return new Promise((resolve, reject) => {
                 axios.post('/admin/translation/getMessageCatalogue', payload).then(response => {
                     if (response.data.status === 'success') {
                         if (typeof payload === 'undefined') {
-                            const fullMessageCatalogue = response.data.messageCatalogue;
-                            context.state.fullMessageCatalogue = fullMessageCatalogue;
-                            let totalMessagesCount = 0;
-                            Object.keys(fullMessageCatalogue).forEach(domain => {
-                                totalMessagesCount += Object.keys(fullMessageCatalogue[domain]).length;
-                            });
-                            context.state.totalMessagesCount = totalMessagesCount;
+                            context.state.fullMessageCatalogue = response.data.messageCatalogue;
                         } else if (typeof payload.localeCode === 'string') {
                             Vue.set(context.state.messageCatalogues, payload.localeCode, response.data.messageCatalogue);
                             Vue.set(context.state.customMessageCatalogues, payload.localeCode, response.data.customMessageCatalogue);
-                            const fullMessageCatalogueDomains = Object.keys(context.state.fullMessageCatalogue);
-                            const customMessageCatalogueDomains = Object.keys(response.data.customMessageCatalogue);
                             /** todo: collect full message catalogue here from received, not on server side */
                             /** todo: check all possible errors (not set domain, id, etc) */
                             Object.keys(response.data.customMessageCatalogue).forEach(domain => {
@@ -103,6 +102,23 @@ export const store = new Vuex.Store({
                                 });
                             });
                         }
+                        context.dispatch('calculateTotalMessagesCount');
+                    }
+                    resolve(response.data);
+                }, error => {
+                    reject(error);
+                });
+            });
+        },
+        setMessage: async (context, payload) => {
+            return new Promise((resolve, reject) => {
+                payload['localeCode'] = context.state.selectedLocale;
+                axios.post('/admin/translation/setMessage', payload).then(response => {
+                    if (response.data.status === 'success') {
+                        Vue.set(context.state.messageCatalogues[payload.localeCode][payload.domain], payload.id, payload.message);
+                        Vue.set(context.state.customMessageCatalogues[payload.localeCode][payload.domain], payload.id, payload.message);
+                        Vue.set(context.state.fullMessageCatalogue[payload.domain], payload.id, '');
+                        context.dispatch('calculateTotalMessagesCount');
                     }
                     resolve(response.data);
                 }, error => {

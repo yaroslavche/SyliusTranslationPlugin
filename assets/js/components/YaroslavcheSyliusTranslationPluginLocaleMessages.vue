@@ -44,7 +44,9 @@
                                    :placeholder="message.translatedMessage"
                                    :value="message.translatedMessage"
                             >
-                            <i class="edit link icon"></i>
+                            <i class="edit link icon"
+                               @click="editTranslationMessage"
+                            ></i>
                         </div>
                     </div>
                 </div>
@@ -59,11 +61,14 @@
                     </div>
                     <i class="dropdown"></i>
                     <div class="menu">
-                        <div class="item">
+                        <div class="item"
+                             @click="newMessage.domain = filter.domain ? filter.domain : 'messages'"
+                        >
                             {{ filter.domain ? filter.domain : 'messages' }}
                         </div>
                         <div class="item" v-for="(domainMessages, domain) in fullMessageCatalogue" :key="domain"
-                             @click="newMessage.domain = domain">
+                             @click="newMessage.domain = domain"
+                        >
                             {{ domain }}
                         </div>
                     </div>
@@ -85,7 +90,7 @@
                             <div class="ui label">
                                 Translation
                             </div>
-                            <input v-model="newMessage.translation">
+                            <input v-model="newMessage.message">
                         </div>
                     </div>
                 </div>
@@ -114,7 +119,11 @@
                 idMaxLength: 40,
                 deltaY: 0,
                 currentIndex: 0,
-                newMessage: {},
+                newMessage: {
+                    domain: 'messages',
+                    id: null,
+                    message: null
+                },
                 filterIdValue: ''
             };
         },
@@ -188,7 +197,21 @@
                 return {}
             },
             addTranslationMessage: function () {
-                console.log(this.newMessage);
+                this.setMessage(this.newMessage);
+            },
+            editTranslationMessage: function () {
+
+            },
+            setMessage: function (messageData) {
+                this.$store.dispatch('setMessage', messageData).then(result => {
+                    if (result.status === 'success') {
+                        this.$snotify.success(result.message);
+                    } else if (result.status === 'error') {
+                        this.$snotify.error(result.message);
+                    }
+                }, error => {
+                    this.$snotify.error(error.message);
+                });
             },
             showAddTranslationModal() {
                 jQuery(this.$refs.addTranslationModal)
@@ -203,8 +226,11 @@
                 ;
             },
             onCloseModal: function () {
-                this.newMessage = {};
-                console.log('close');
+                this.newMessage = {
+                    domain: 'messages',
+                    id: null,
+                    message: null
+                };
             }
         },
         mounted() {

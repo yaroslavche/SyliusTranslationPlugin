@@ -76,6 +76,29 @@ final class TranslationController extends AbstractController
      * @param Request $request
      * @return JsonResponse
      */
+    public function setMessage(Request $request): JsonResponse
+    {
+        $localeCode = $request->request->get('localeCode');
+        $domain = $request->request->get('domain');
+        $id = $request->request->get('id');
+        $message = $request->request->get('message');
+
+        try {
+            $this->translationService->setMessage($localeCode, $domain, $id, $message);
+        } catch (Exception $exception) {
+            return $this->json(['status' => 'error', 'message' => $exception->getMessage()]);
+        }
+
+        return $this->json([
+            'status' => 'success',
+            'message' => 'Message successfully added.'
+        ]);
+    }
+
+    /**
+     * @param Request $request
+     * @return JsonResponse
+     */
     public function addLocale(Request $request): JsonResponse
     {
         $requestLocaleCode = $request->request->get('localeCode');
