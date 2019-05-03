@@ -9,6 +9,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\Intl\Intl;
 use Yaroslavche\SyliusTranslationPlugin\Service\TranslationService;
 
 use function Safe\sprintf;
@@ -49,7 +50,14 @@ final class TranslationController extends AbstractController
      */
     public function getLocales(): JsonResponse
     {
-        return $this->json(['status' => 'success', 'locales' => $this->translationService->getLocales()]);
+        $supportedLocales = Intl::getLocaleBundle()->getLocaleNames($this->translationService->getDefaultLocale());
+        return $this->json([
+            'status' => 'success',
+            'locales' => $this->translationService->getLocales(),
+            'supportedLocales' => $supportedLocales,
+            /** @todo */
+            'defaultLocale' => 'en_US'
+        ]);
     }
 
     /**

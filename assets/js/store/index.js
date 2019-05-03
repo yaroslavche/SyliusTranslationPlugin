@@ -13,7 +13,9 @@ export const store = new Vuex.Store({
         customMessageCatalogues: [],
         selectedLocale: '',
         selectedDomain: '',
-        filter: {}
+        filter: {},
+        supportedLocales: {},
+        defaultLocale: ''
     },
     getters: {
         locales: state => {
@@ -40,6 +42,12 @@ export const store = new Vuex.Store({
         filter: state => {
             return state.filter;
         },
+        supportedLocales: state => {
+            return state.supportedLocales;
+        },
+        defaultLocale: state => {
+            return state.defaultLocale;
+        },
     },
     mutations: {
         setSelectedLocale: (state, selectedLocale) => {
@@ -65,6 +73,8 @@ export const store = new Vuex.Store({
                     if (response.data.status === 'success') {
                         const locales = response.data.locales;
                         context.state.locales = locales;
+                        context.state.supportedLocales = response.data.supportedLocales;
+                        context.state.defaultLocale = response.data.defaultLocale;
                         Object.keys(locales).forEach(localeCode => {
                             context.dispatch('fetchMessageCatalogue', {localeCode});
                         });
@@ -128,10 +138,10 @@ export const store = new Vuex.Store({
         },
         addLocale: async (context, payload) => {
             return new Promise((resolve, reject) => {
-                axios.post('/admin/translation/addLocale', {localeCode: payload.localeCode}).then(response => {
+                axios.post('/admin/translation/addLocale', payload).then(response => {
                     if (response.data.status === 'success') {
                         Vue.set(context.state.locales, payload.localeCode, response.data.localeLanguageName);
-                        context.dispatch('fetchMessageCatalogue', {localeCode: payload.localeCode});
+                        context.dispatch('fetchMessageCatalogue', payload);
                     }
                     resolve(response.data);
                 }, error => {
@@ -145,7 +155,7 @@ export const store = new Vuex.Store({
                     reject({message: `Locale code ${payload.localeCode} not found`});
                     return;
                 }
-                axios.post('/admin/translation/removeLocale', {localeCode: payload.localeCode}).then(response => {
+                axios.post('/admin/translation/removeLocale', payload).then(response => {
                     if (response.data.status === 'success') {
                         Vue.delete(context.state.locales, payload.localeCode);
                         Vue.delete(context.state.messageCatalogues, payload.localeCode);

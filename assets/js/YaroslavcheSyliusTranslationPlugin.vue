@@ -23,15 +23,21 @@
                 </YaroslavcheSyliusTranslationPluginDashboardLocale>
             </div>
             <div class="ui segment">
-                <!-- todo: make dropdown with Intl locales -->
-                <!--<div class="ui floating dropdown labeled search icon button">
+                <div class="ui floating dropdown labeled search icon button" ref="supportedLocalesDropdown">
                     <i class="world icon"></i>
                     <span class="text">Select Language</span>
                     <div class="menu">
-                        <div class="item">Some list</div>
+                        <div class="item"
+                             v-for="(languageName, localeCode) in supportedLocales" :key="localeCode"
+                             @click="selectedNewLocale = localeCode"
+                             @keyup.enter="selectedNewLocale = localeCode"
+                        >
+                            <i :class="[localeCode, 'flag']"></i>
+                            {{ languageName }}
+                        </div>
                     </div>
-                </div>-->
-                <input type="text" maxlength="5" ref="newLocaleCode">
+                </div>
+                <input type="hidden" ref="newLocaleCode">
                 <button class="ui primary button" @click="addLocale">Add</button>
             </div>
         </div>
@@ -71,6 +77,11 @@
 
     export default {
         name: 'YaroslavcheSyliusTranslationPlugin',
+        data() {
+            return {
+                selectedNewLocale: '',
+            };
+        },
         components: {
             YaroslavcheSyliusTranslationPluginDashboardTotal,
             YaroslavcheSyliusTranslationPluginDashboardLocale,
@@ -83,7 +94,9 @@
                 'fullMessageCatalogue',
                 'totalMessagesCount',
                 'messageCatalogues',
-                'selectedLocale'
+                'selectedLocale',
+                'supportedLocales',
+                'defaultLocale'
             ])
         },
         methods: {
@@ -91,8 +104,7 @@
                 this.$store.commit('setSelectedLocale', localeCode);
             },
             addLocale() {
-                // todo: check locale code: /[-_][a-z]+$/i
-                const payload = {localeCode: this.$refs.newLocaleCode.value};
+                const payload = {localeCode: this.selectedNewLocale};
                 this.$store.dispatch('addLocale', payload).then(result => {
                     if (result.status === 'success') {
                         this.$snotify.success(result.message);
@@ -119,7 +131,16 @@
             }, error => {
                 this.$snotify.error(error.message);
             });
-        }
+        },
+        watch: {
+            supportedLocales: function () {
+                jQuery(this.$refs.supportedLocalesDropdown).dropdown({
+                    onChange: () => {
+                        // if need
+                    }
+                });
+            },
+        },
     }
 </script>
 
