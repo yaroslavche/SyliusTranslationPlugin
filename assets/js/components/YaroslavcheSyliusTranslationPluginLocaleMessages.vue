@@ -6,7 +6,9 @@
                     <h2>{{ filter.domain }}</h2>
                 </div>
                 <div class="six wide column">
-                    <div class="ui green inverted button tiny" style="float: right;">
+                    <div class="ui green inverted button tiny" style="float: right;"
+                         @click="showAddTranslationModal"
+                    >
                         <i class="add icon"></i>
                         Add
                     </div>
@@ -38,21 +40,24 @@
                 </div>
             </div>
         </div>
-        <!--<div class="ui basic modal">
+        <div class="ui basic modal" ref="addTranslationModal">
             <div class="ui icon header">
                 Add new message in
                 <div class="ui inline dropdown" ref="domainDropdown">
                     <div class="text">
-                        {{ currentDomain }}
+                        {{ filter.domain ? filter.domain : 'messages' }}
                     </div>
                     <i class="dropdown"></i>
                     <div class="menu">
-                        <div class="item" v-for="domain in domains" @click="currentDomain = domain">
-                            {{ domain }}
+                        <div class="item">
+                            {{ filter.domain ? filter.domain : 'messages' }}
                         </div>
+                        <!--<div class="item" v-for="domain in domains" @click="newMessage.domain = domain">
+                            {{ domain }}
+                        </div>-->
                     </div>
                 </div>
-                domain for "{{ localeCode }}" locale
+                domain for "{{ selectedLocale }}" locale
             </div>
             <div class="content">
                 <div class="ui center aligned grid">
@@ -61,7 +66,7 @@
                             <div class="ui label">
                                 Translation Id
                             </div>
-                            <input v-model="id">
+                            <input v-model="newMessage.id">
                         </div>
                     </div>
                     <div class="sixteen wide column">
@@ -69,22 +74,22 @@
                             <div class="ui label">
                                 Translation
                             </div>
-                            <input v-model="translation">
+                            <input v-model="newMessage.translation">
                         </div>
                     </div>
                 </div>
             </div>
             <div class="actions">
-                <div class="ui red basic cancel inverted button" @click="onClose">
+                <div class="ui red basic cancel inverted button" @click="onCloseModal">
                     <i class="remove icon"></i>
                     Cancel
                 </div>
-                <div class="ui green ok inverted button" @click="addTranslation">
+                <div class="ui green ok inverted button" @click="addTranslationMessage">
                     <i class="checkmark icon"></i>
                     Apply
                 </div>
             </div>
-        </div>-->
+        </div>
     </div>
 </template>
 
@@ -98,6 +103,7 @@
                 idMaxLength: 35,
                 deltaY: 0,
                 currentIndex: 0,
+                newMessage: {}
             };
         },
         computed: {
@@ -151,11 +157,37 @@
                 if (this.filter.showTranslated && message.translated) return true;
                 if (this.filter.showUntranslated && !message.translated) return true;
                 if (this.filter.showCustom && message.custom) return true;
+            },
+            addTranslationMessage: function () {
+                console.log(this.newMessage);
+            },
+            showAddTranslationModal() {
+                jQuery(this.$refs.addTranslationModal)
+                    .modal('show', {
+                        onApprove: function () {
+                            console.log(this);
+                        },
+                        onDeny: function () {
+                            console.log(this);
+                        }
+                    })
+                ;
+            },
+            onCloseModal: function () {
+                this.newMessage = {};
+                console.log('close');
             }
-        }
+        },
+        mounted() {
+            jQuery(this.$refs.domainDropdown).dropdown({showOnFocus: false});
+        },
     }
 </script>
 
 <style scoped>
-
+    .ui.inline.dropdown {
+        color: #9c6f04;
+        text-decoration: underline !important;
+        text-underline-style: dotted !important;
+    }
 </style>
