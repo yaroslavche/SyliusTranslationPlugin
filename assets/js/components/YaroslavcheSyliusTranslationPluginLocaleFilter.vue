@@ -34,7 +34,7 @@
                         <label for="filterUntranslated">Show Untranslated</label>
                     </div>
                 </div>
-                <div class="field">
+                <div class="field" v-show="showTranslated">
                     <div class="ui toggle checkbox checked">
                         <input id="filterCustom" type="checkbox" name="showCustom"
                                v-model="showCustom">

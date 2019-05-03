@@ -2,23 +2,33 @@
     <div class="ui segment">
         <div class="ui segment">
             <div class="ui two column stackable grid">
-                <div class="ten wide column">
+                <div class="eight wide column">
                     <h2>{{ filter.domain }}</h2>
                 </div>
-                <div class="six wide column">
-                    <div class="ui green inverted button tiny" style="float: right;"
-                         @click="showAddTranslationModal"
-                    >
-                        <i class="add icon"></i>
-                        Add
+                <div class="eight wide column">
+                    <div class="ui two column stackable middle aligned grid">
+                        <div class="ten wide column right aligned">
+                            <div class="ui right labeled left icon input">
+                                <i class="search icon"></i>
+                                <input placeholder="Search" type="text" v-model="filterIdValue">
+                                <a class="ui label">
+                                    {{ Object.keys(messages).length }} / {{ totalMessagesCount }}
+                                </a>
+                            </div>
+                        </div>
+                        <div class="six wide column right aligned">
+                            <div class="ui green inverted button tiny fluid"
+                                 @click="showAddTranslationModal"
+                            >
+                                <i class="add icon"></i>
+                                Add
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
             <div class="ui grid">
-                <div class="row"
-                     v-for="(message, id) in messages"
-                     v-show="showMessage(message)"
-                >
+                <div class="row" v-for="(message, id) in messages">
                     <div class="six wide column">
                         <div class="ui big label fluid" v-bind="showTooltip(id)">
                             <i class="icon check circle outline green" v-show="message.translated"></i>
@@ -30,7 +40,7 @@
                     </div>
                     <div class="ten wide column">
                         <div class="ui icon input fluid">
-                            <input class="translation_input" type="text"
+                            <input type="text"
                                    :placeholder="message.translatedMessage"
                                    :value="message.translatedMessage"
                             >
@@ -101,15 +111,17 @@
         name: "YaroslavcheSyliusTranslationPluginLocaleMessages",
         data() {
             return {
-                idMaxLength: 45,
+                idMaxLength: 40,
                 deltaY: 0,
                 currentIndex: 0,
-                newMessage: {}
+                newMessage: {},
+                filterIdValue: ''
             };
         },
         computed: {
             ...mapGetters([
                 'fullMessageCatalogue',
+                'totalMessagesCount',
                 'messageCatalogues',
                 'customMessageCatalogues',
                 'filter',
@@ -118,34 +130,47 @@
             messages: {
                 get: function () {
                     let messages = {};
-                    Object.keys(this.fullMessageCatalogue).forEach(domain => {
-                        if (domain !== this.filter.domain) return;
-                        Object.keys(this.fullMessageCatalogue[domain]).forEach(id => {
-                            const message = this.fullMessageCatalogue[domain][id];
-                            let translatedMessage = null;
-                            let customMessage = null;
-                            if (this.messageCatalogues[this.selectedLocale]) {
-                                if (this.messageCatalogues[this.selectedLocale][domain]) {
-                                    if (this.messageCatalogues[this.selectedLocale][domain][id]) {
-                                        translatedMessage = this.messageCatalogues[this.selectedLocale][domain][id];
-                                    }
+                    const domain = this.filter.domain;
+                    if (!this.filter.showTranslated && !this.filter.showUntranslated && !this.filter.showCustom) return messages;
+                    if (typeof this.fullMessageCatalogue[domain] === 'undefined') return;
+                    Object.keys(this.fullMessageCatalogue[domain]).forEach(id => {
+                        const message = this.fullMessageCatalogue[domain][id];
+
+                        if (this.filterIdValue.length > 0 && !id.toLowerCase().includes(this.filterIdValue.toLowerCase())) return;
+
+                        let translatedMessage = null;
+                        let customMessage = null;
+                        if (this.messageCatalogues[this.selectedLocale]) {
+                            if (this.messageCatalogues[this.selectedLocale][domain]) {
+                                if (this.messageCatalogues[this.selectedLocale][domain][id]) {
+                                    translatedMessage = this.messageCatalogues[this.selectedLocale][domain][id];
                                 }
                             }
-                            if (this.customMessageCatalogues[this.selectedLocale]) {
-                                if (this.customMessageCatalogues[this.selectedLocale][domain]) {
-                                    if (this.customMessageCatalogues[this.selectedLocale][domain][id]) {
-                                        translatedMessage = customMessage = this.customMessageCatalogues[this.selectedLocale][domain][id];
-                                    }
+                        }
+                        if (this.customMessageCatalogues[this.selectedLocale]) {
+                            if (this.customMessageCatalogues[this.selectedLocale][domain]) {
+                                if (this.customMessageCatalogues[this.selectedLocale][domain][id]) {
+                                    translatedMessage = customMessage = this.customMessageCatalogues[this.selectedLocale][domain][id];
                                 }
                             }
-                            messages[id] = {
-                                id: id.substring(0, this.idMaxLength),
-                                message,
-                                translatedMessage,
-                                translated: typeof (translatedMessage) === 'string',
-                                custom: typeof (customMessage) === 'string',
-                            };
-                        });
+                        }
+
+                        const isTranslatedMessage = typeof (translatedMessage) === 'string';
+                        const isCustomMessage = typeof (customMessage) === 'string';
+
+                        if (!this.filter.showTranslated || !this.filter.showUntranslated) {
+                            if (this.filter.showTranslated && !isTranslatedMessage) return;
+                            if (this.filter.showUntranslated && isTranslatedMessage) return;
+                        }
+                        if (this.filter.showTranslated && this.filter.showCustom && !isCustomMessage) return;
+
+                        messages[id] = {
+                            id: id.substring(0, this.idMaxLength),
+                            message,
+                            translatedMessage,
+                            translated: typeof (translatedMessage) === 'string',
+                            custom: isCustomMessage,
+                        };
                     });
                     return messages;
                 }
@@ -161,12 +186,6 @@
                     }
                 }
                 return {}
-            },
-            showMessage: function (message) {
-                if (this.filter.showTranslated && this.filter.showUntranslated) return true;
-                if (this.filter.showTranslated && message.translated) return true;
-                if (this.filter.showUntranslated && !message.translated) return true;
-                if (this.filter.showCustom && message.custom) return true;
             },
             addTranslationMessage: function () {
                 console.log(this.newMessage);

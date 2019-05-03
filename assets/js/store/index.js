@@ -49,6 +49,12 @@ export const store = new Vuex.Store({
             state.selectedDomain = selectedDomain;
         },
         setFilter: (state, filter) => {
+            Object.entries(filter).forEach(filterData => {
+                const
+                    filterKey = filterData[0],
+                    filterValue = filterData[1];
+                Vue.set(state.filter, filterKey, filterValue);
+            });
             state.filter = filter;
         },
     },
