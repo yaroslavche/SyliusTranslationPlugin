@@ -48,10 +48,10 @@
                             </div>
                         </div>
                     </div>
-                    <!-- filter -->
+                    <YaroslavcheSyliusTranslationPluginLocaleFilter></YaroslavcheSyliusTranslationPluginLocaleFilter>
                 </div>
                 <div class="twelve wide column">
-                    <!-- list -->
+                    <YaroslavcheSyliusTranslationPluginLocaleMessages></YaroslavcheSyliusTranslationPluginLocaleMessages>
                 </div>
             </div>
         </div>
@@ -64,12 +64,18 @@
         from './components/YaroslavcheSyliusTranslationPluginDashboardLocale';
     import YaroslavcheSyliusTranslationPluginDashboardTotal
         from './components/YaroslavcheSyliusTranslationPluginDashboardTotal';
+    import YaroslavcheSyliusTranslationPluginLocaleFilter
+        from './components/YaroslavcheSyliusTranslationPluginLocaleFilter';
+    import YaroslavcheSyliusTranslationPluginLocaleMessages
+        from './components/YaroslavcheSyliusTranslationPluginLocaleMessages';
 
     export default {
         name: 'YaroslavcheSyliusTranslationPlugin',
         components: {
             YaroslavcheSyliusTranslationPluginDashboardTotal,
-            YaroslavcheSyliusTranslationPluginDashboardLocale
+            YaroslavcheSyliusTranslationPluginDashboardLocale,
+            YaroslavcheSyliusTranslationPluginLocaleFilter,
+            YaroslavcheSyliusTranslationPluginLocaleMessages
         },
         computed: {
             ...mapGetters([

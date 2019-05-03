@@ -43,7 +43,7 @@
             <div class="column">
                 <div class="ui statistic">
                     <div class="value">
-                    <span v-show="fullMessageCatalogueLoader">
+                    <span v-show="totalTranslationProgressPercentageLoader">
                         <div class="ui active inline loader"></div>
                     </span>
                         {{ totalTranslationProgressPercentage }}
@@ -69,7 +69,8 @@
         data() {
             return {
                 fullMessageCatalogueLoader: true,
-                localesLoader: true
+                localesLoader: true,
+                totalTranslationProgressPercentageLoader: true
             };
         },
         computed: {
@@ -96,13 +97,26 @@
                     Object.entries(this.fullMessageCatalogue).length === 0 ||
                     Object.entries(this.locales).length === 0
                 ) {
-                    this.fullMessageCatalogueLoader = true;
                     return '';
                 }
-                // todo: calculate total percentage
-                let totalPercentage = ((15 / this.totalMessagesCount) * 100).toFixed(2);
+                let totalTranslatedMessages = 0;
+                let totalLocales = 0;
+                Object.keys(this.locales).forEach(localeCode => {
+                    const localeCodeDomains = this.messageCatalogues[localeCode];
+                    if (typeof localeCodeDomains !== 'undefined') {
+                        totalLocales++;
+                        Object.keys(localeCodeDomains).forEach(domain => {
+                            totalTranslatedMessages += Object.keys(localeCodeDomains[domain]).length;
+                        });
+                        console.log(localeCode, totalLocales, totalTranslatedMessages);
+                    }
+                });
+                const totalPercentage = ((totalTranslatedMessages / (this.totalMessagesCount * totalLocales)) * 100).toFixed(2);
+                if (isNaN(parseInt(totalPercentage))) {
+                    return '';
+                }
                 jQuery(this.$refs.progress).progress({percent: parseInt(totalPercentage)});
-                this.fullMessageCatalogueLoader = false;
+                this.totalTranslationProgressPercentageLoader = false;
                 return `${totalPercentage}%`;
             }
         },

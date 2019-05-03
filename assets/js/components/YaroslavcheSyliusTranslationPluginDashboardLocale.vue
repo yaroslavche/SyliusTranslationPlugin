@@ -4,7 +4,7 @@
             <div class="column">
                 <div class="ui statistic">
                     <div class="value locale">
-                        <div class="ui right internal attached rail">
+                        <div class="ui right internal attached rail" v-show="Object.entries(locales).length > 1">
                             <button class="ui icon button removeLocale" @click="removeLocale">
                                 <i class="trash icon"></i>
                             </button>

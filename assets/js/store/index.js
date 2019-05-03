@@ -11,7 +11,8 @@ export const store = new Vuex.Store({
         totalMessagesCount: null,
         messageCatalogues: [],
         selectedLocale: '',
-        selectedDomain: ''
+        selectedDomain: '',
+        filter: {}
     },
     getters: {
         locales: state => {
@@ -32,6 +33,9 @@ export const store = new Vuex.Store({
         selectedDomain: state => {
             return state.selectedDomain;
         },
+        filter: state => {
+            return state.filter;
+        },
     },
     mutations: {
         setSelectedLocale: (state, selectedLocale) => {
@@ -39,6 +43,9 @@ export const store = new Vuex.Store({
         },
         setSelectedDomain: (state, selectedDomain) => {
             state.selectedDomain = selectedDomain;
+        },
+        setFilter: (state, filter) => {
+            state.filter = filter;
         },
     },
     actions: {
