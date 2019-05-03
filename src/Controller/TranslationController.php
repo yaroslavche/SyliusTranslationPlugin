@@ -81,17 +81,17 @@ final class TranslationController extends AbstractController
         $localeCode = $request->request->get('localeCode');
         $domain = $request->request->get('domain');
         $id = $request->request->get('id');
-        $message = $request->request->get('message');
+        $message = $request->request->get('message', '');
 
         try {
-            $this->translationService->setMessage($localeCode, $domain, $id, $message);
+            $this->translationService->setMessage($localeCode, $domain, $id, $message ?? '');
         } catch (Exception $exception) {
             return $this->json(['status' => 'error', 'message' => $exception->getMessage()]);
         }
 
         return $this->json([
             'status' => 'success',
-            'message' => 'Message successfully added.'
+            'message' => 'Message successfully updated.'
         ]);
     }
 

@@ -27,18 +27,18 @@
                         <label for="filterTranslated">Show Translated</label>
                     </div>
                 </div>
+                <div class="field" v-show="showTranslated">
+                    <div class="ui toggle checkbox checked">
+                        <input id="filterCustom" type="checkbox" name="showCustom"
+                               v-model="showCustom">
+                        <label for="filterCustom">Only Custom</label>
+                    </div>
+                </div>
                 <div class="field">
                     <div class="ui toggle checkbox checked">
                         <input id="filterUntranslated" type="checkbox" name="showUntranslated"
                                v-model="showUntranslated">
                         <label for="filterUntranslated">Show Untranslated</label>
-                    </div>
-                </div>
-                <div class="field" v-show="showTranslated">
-                    <div class="ui toggle checkbox checked">
-                        <input id="filterCustom" type="checkbox" name="showCustom"
-                               v-model="showCustom">
-                        <label for="filterCustom">Show Custom</label>
                     </div>
                 </div>
             </div>

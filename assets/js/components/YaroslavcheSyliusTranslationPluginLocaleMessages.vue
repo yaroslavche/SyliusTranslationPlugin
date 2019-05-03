@@ -42,10 +42,11 @@
                         <div class="ui icon input fluid">
                             <input type="text"
                                    :placeholder="message.translatedMessage"
-                                   :value="message.translatedMessage"
+                                   v-model="message.translatedMessage"
+                                   @keyup.enter="editTranslationMessage(id, message, $event)"
                             >
                             <i class="edit link icon"
-                               @click="editTranslationMessage"
+                               @click="editTranslationMessage(id, message, $event)"
                             ></i>
                         </div>
                     </div>
@@ -117,8 +118,6 @@
         data() {
             return {
                 idMaxLength: 40,
-                deltaY: 0,
-                currentIndex: 0,
                 newMessage: {
                     domain: 'messages',
                     id: null,
@@ -143,8 +142,6 @@
                     if (!this.filter.showTranslated && !this.filter.showUntranslated && !this.filter.showCustom) return messages;
                     if (typeof this.fullMessageCatalogue[domain] === 'undefined') return;
                     Object.keys(this.fullMessageCatalogue[domain]).forEach(id => {
-                        const message = this.fullMessageCatalogue[domain][id];
-
                         if (this.filterIdValue.length > 0 && !id.toLowerCase().includes(this.filterIdValue.toLowerCase())) return;
 
                         let translatedMessage = null;
@@ -175,7 +172,6 @@
 
                         messages[id] = {
                             id: id.substring(0, this.idMaxLength),
-                            message,
                             translatedMessage,
                             translated: typeof (translatedMessage) === 'string',
                             custom: isCustomMessage,
@@ -199,8 +195,13 @@
             addTranslationMessage: function () {
                 this.setMessage(this.newMessage);
             },
-            editTranslationMessage: function () {
-
+            editTranslationMessage: function (fullMessageId, message, event) {
+                console.log(event.target);
+                this.setMessage({
+                    domain: this.filter.domain,
+                    id: fullMessageId,
+                    message: message.translatedMessage
+                });
             },
             setMessage: function (messageData) {
                 this.$store.dispatch('setMessage', messageData).then(result => {
@@ -227,7 +228,7 @@
             },
             onCloseModal: function () {
                 this.newMessage = {
-                    domain: 'messages',
+                    domain: this.filter.domain,
                     id: null,
                     message: null
                 };
