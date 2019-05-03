@@ -52,9 +52,10 @@
                         <div class="item">
                             {{ filter.domain ? filter.domain : 'messages' }}
                         </div>
-                        <!--<div class="item" v-for="domain in domains" @click="newMessage.domain = domain">
+                        <div class="item" v-for="(domainMessages, domain) in fullMessageCatalogue" :key="domain"
+                             @click="newMessage.domain = domain">
                             {{ domain }}
-                        </div>-->
+                        </div>
                     </div>
                 </div>
                 domain for "{{ selectedLocale }}" locale
