@@ -10,6 +10,7 @@ export const store = new Vuex.Store({
         fullMessageCatalogue: {},
         totalMessagesCount: null,
         messageCatalogues: [],
+        customMessageCatalogues: [],
         selectedLocale: '',
         selectedDomain: '',
         filter: {}
@@ -26,6 +27,9 @@ export const store = new Vuex.Store({
         },
         messageCatalogues: state => {
             return state.messageCatalogues;
+        },
+        customMessageCatalogues: state => {
+            return state.customMessageCatalogues;
         },
         selectedLocale: state => {
             return state.selectedLocale;
@@ -79,6 +83,19 @@ export const store = new Vuex.Store({
                             context.state.totalMessagesCount = totalMessagesCount;
                         } else if (typeof payload.localeCode === 'string') {
                             Vue.set(context.state.messageCatalogues, payload.localeCode, response.data.messageCatalogue);
+                            Vue.set(context.state.customMessageCatalogues, payload.localeCode, response.data.customMessageCatalogue);
+                            const fullMessageCatalogueDomains = Object.keys(context.state.fullMessageCatalogue);
+                            const customMessageCatalogueDomains = Object.keys(response.data.customMessageCatalogue);
+                            /** todo: collect full message catalogue here from received, not on server side */
+                            /** todo: check all possible errors (not set domain, id, etc) */
+                            Object.keys(response.data.customMessageCatalogue).forEach(domain => {
+                                const translationMessageIds = Object.keys(context.state.fullMessageCatalogue[domain]);
+                                Object.keys(response.data.customMessageCatalogue[domain]).forEach(id => {
+                                    if (!translationMessageIds.includes(id)) {
+                                        Vue.set(context.state.fullMessageCatalogue[domain], id, '');
+                                    }
+                                });
+                            });
                         }
                     }
                     resolve(response.data);

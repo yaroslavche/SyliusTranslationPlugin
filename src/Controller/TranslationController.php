@@ -58,14 +58,18 @@ final class TranslationController extends AbstractController
      */
     public function getMessageCatalogue(Request $request): JsonResponse
     {
-//        sleep(mt_rand(0, 3));
         $requestLocaleCode = $request->request->get('localeCode');
         $messageCatalogue = $this->translationService->getMessageCatalogue($requestLocaleCode);
+        $customMessageCatalogue = $this->translationService->getCustomMessageCatalogue($requestLocaleCode);
 
         if (null === $messageCatalogue) {
             return $this->json(['status' => 'error', 'message' => 'get_message_catalogue_failed']);
         }
-        return $this->json(['status' => 'success', 'messageCatalogue' => $messageCatalogue->all()]);
+        return $this->json([
+            'status' => 'success',
+            'messageCatalogue' => $messageCatalogue->all(),
+            'customMessageCatalogue' => $customMessageCatalogue ? $customMessageCatalogue->all() : null
+        ]);
     }
 
     /**

@@ -101,7 +101,7 @@
         name: "YaroslavcheSyliusTranslationPluginLocaleMessages",
         data() {
             return {
-                idMaxLength: 35,
+                idMaxLength: 45,
                 deltaY: 0,
                 currentIndex: 0,
                 newMessage: {}
@@ -111,6 +111,7 @@
             ...mapGetters([
                 'fullMessageCatalogue',
                 'messageCatalogues',
+                'customMessageCatalogues',
                 'filter',
                 'selectedLocale'
             ]),
@@ -122,10 +123,18 @@
                         Object.keys(this.fullMessageCatalogue[domain]).forEach(id => {
                             const message = this.fullMessageCatalogue[domain][id];
                             let translatedMessage = null;
+                            let customMessage = null;
                             if (this.messageCatalogues[this.selectedLocale]) {
                                 if (this.messageCatalogues[this.selectedLocale][domain]) {
                                     if (this.messageCatalogues[this.selectedLocale][domain][id]) {
                                         translatedMessage = this.messageCatalogues[this.selectedLocale][domain][id];
+                                    }
+                                }
+                            }
+                            if (this.customMessageCatalogues[this.selectedLocale]) {
+                                if (this.customMessageCatalogues[this.selectedLocale][domain]) {
+                                    if (this.customMessageCatalogues[this.selectedLocale][domain][id]) {
+                                        translatedMessage = customMessage = this.customMessageCatalogues[this.selectedLocale][domain][id];
                                     }
                                 }
                             }
@@ -134,7 +143,7 @@
                                 message,
                                 translatedMessage,
                                 translated: typeof (translatedMessage) === 'string',
-                                custom: false,
+                                custom: typeof (customMessage) === 'string',
                             };
                         });
                     });

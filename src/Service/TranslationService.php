@@ -6,7 +6,11 @@ namespace Yaroslavche\SyliusTranslationPlugin\Service;
 use Exception;
 use Sylius\Component\Locale\Model\Locale;
 use Sylius\Component\Resource\Repository\RepositoryInterface;
+use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\Finder\Finder;
 use Symfony\Component\Intl\Intl;
+use Symfony\Component\Translation\Loader\XliffFileLoader;
+use Symfony\Component\Translation\Loader\YamlFileLoader;
 use Symfony\Component\Translation\MessageCatalogue;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
@@ -21,15 +25,32 @@ class TranslationService
     /** @var RepositoryInterface $localeRepository */
     private $localeRepository;
 
+    /** @var string $kernelRootDir */
+    private $kernelRootDir;
+
+    /** @var Filesystem $filesystem */
+    private $filesystem;
+
+    /** @var Finder $finder */
+    private $finder;
+
     /**
      * TranslationService constructor.
      * @param TranslatorInterface $translator
      * @param RepositoryInterface $localeRepository
+     * @param string $kernelRootDir
      */
-    public function __construct(TranslatorInterface $translator, RepositoryInterface $localeRepository)
+    public function __construct(
+        TranslatorInterface $translator,
+        RepositoryInterface $localeRepository,
+        string $kernelRootDir
+    )
     {
         $this->translator = $translator;
         $this->localeRepository = $localeRepository;
+        $this->kernelRootDir = $kernelRootDir;
+        $this->filesystem = new Filesystem();
+        $this->finder = new Finder();
     }
 
 
@@ -79,6 +100,45 @@ class TranslationService
                 $messageCatalogue = $this->translator->getCatalogue($localeCode);
             }
         }
+        return $messageCatalogue;
+    }
+
+    public function getCustomMessageCatalogue(?string $localeCode = null): ?MessageCatalogue
+    {
+        $messageCatalogue = null;
+        $locales = Intl::getLocaleBundle()->getLocales();
+        if (!in_array($localeCode, $locales)) {
+            return null;
+//            throw new Exception('Invalid locale code');
+        }
+
+        $messageCatalogue = new MessageCatalogue($localeCode);
+        $customMessagesPath = realpath($this->kernelRootDir . '/translations/');
+        if ($this->filesystem->exists($customMessagesPath)) {
+            $translationFiles = $this->finder->files()->in($customMessagesPath);
+            /** @var \SplFileInfo $translationFile */
+            foreach ($translationFiles as $translationFile) {
+                list($domain, $translationLocaleCode, $format) = explode('.', $translationFile->getFilename());
+                if (strtolower($localeCode) !== strtolower($translationLocaleCode)) {
+                    continue;
+                }
+                $loader = null;
+                switch (strtolower($format)) {
+                    case 'yml':
+                    case 'yaml':
+                        $loader = new YamlFileLoader();
+                        break;
+                    case 'xlf':
+                    case 'xliff':
+                        $loader = new XliffFileLoader();
+                }
+                if (null === $loader) {
+                    continue;
+                }
+                $messageCatalogue = $loader->load($translationFile->getRealPath(), $localeCode, $domain);
+            }
+        }
+
         return $messageCatalogue;
     }
 

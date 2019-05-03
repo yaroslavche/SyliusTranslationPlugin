@@ -108,7 +108,6 @@
                         Object.keys(localeCodeDomains).forEach(domain => {
                             totalTranslatedMessages += Object.keys(localeCodeDomains[domain]).length;
                         });
-                        console.log(localeCode, totalLocales, totalTranslatedMessages);
                     }
                 });
                 const totalPercentage = ((totalTranslatedMessages / (this.totalMessagesCount * totalLocales)) * 100).toFixed(2);
