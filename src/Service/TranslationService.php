@@ -174,7 +174,7 @@ class TranslationService
             $writer = new TranslationWriter();
             $writer->addDumper($format, $dumper);
             $writer->write($messageCatalogue, $format, ['path' => $customMessagesPath]);
-            /** @todo warmup translation cache */
+            /** @todo warmup domain translation cache file */
             return true;
         } catch (Exception $exception) {
             return false;

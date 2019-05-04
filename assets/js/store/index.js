@@ -9,13 +9,14 @@ export const store = new Vuex.Store({
         locales: {},
         fullMessageCatalogue: {},
         totalMessagesCount: null,
-        messageCatalogues: [],
-        customMessageCatalogues: [],
+        messageCatalogues: {},
+        customMessageCatalogues: {},
         selectedLocale: '',
         selectedDomain: '',
         filter: {},
         supportedLocales: {},
-        defaultLocale: ''
+        defaultLocale: '',
+        setMessageData: {}
     },
     getters: {
         locales: state => {
@@ -64,7 +65,7 @@ export const store = new Vuex.Store({
                 Vue.set(state.filter, filterKey, filterValue);
             });
             state.filter = filter;
-        },
+        }
     },
     actions: {
         fetchLocales: async (context) => {
@@ -120,15 +121,41 @@ export const store = new Vuex.Store({
                 });
             });
         },
+        setMessageUpdateStore: (context) => {
+            const {localeCode, domain, id, message} = context.state.setMessageData;
+
+            if (typeof context.state.messageCatalogues[localeCode] !== 'object') {
+                Vue.set(context.state.messageCatalogues, localeCode, {});
+            }
+            if (typeof context.state.messageCatalogues[localeCode][domain] !== 'object') {
+                Vue.set(context.state.messageCatalogues[localeCode], domain, {});
+            }
+            Vue.set(context.state.messageCatalogues[localeCode][domain], id, message);
+
+            if (typeof context.state.customMessageCatalogues[localeCode] !== 'object') {
+                Vue.set(context.state.customMessageCatalogues, localeCode, {});
+            }
+            if (typeof context.state.customMessageCatalogues[localeCode][domain] !== 'object') {
+                Vue.set(context.state.customMessageCatalogues[localeCode], domain, {});
+            }
+            Vue.set(context.state.customMessageCatalogues[localeCode][domain], id, message);
+
+            if (typeof context.state.fullMessageCatalogue[domain] !== 'object') {
+                Vue.set(context.state.fullMessageCatalogue, domain, {});
+            }
+            Vue.set(context.state.fullMessageCatalogue[domain], id, '');
+        },
         setMessage: async (context, payload) => {
             return new Promise((resolve, reject) => {
-                payload['localeCode'] = context.state.selectedLocale;
                 axios.post('/admin/translation/setMessage', payload).then(response => {
                     if (response.data.status === 'success') {
-                        Vue.set(context.state.messageCatalogues[payload.localeCode][payload.domain], payload.id, payload.message);
-                        Vue.set(context.state.customMessageCatalogues[payload.localeCode][payload.domain], payload.id, payload.message);
-                        Vue.set(context.state.fullMessageCatalogue[payload.domain], payload.id, '');
-                        context.dispatch('calculateTotalMessagesCount');
+                        Vue.set(context.state, 'setMessageData', {
+                            localeCode: payload.localeCode,
+                            domain: payload.domain,
+                            id: payload.id,
+                            message: payload.message,
+                        });
+                        context.dispatch('setMessageUpdateStore');
                     }
                     resolve(response.data);
                 }, error => {

@@ -1,5 +1,6 @@
 <template>
     <div class="ui segment">
+        <vue-snotify></vue-snotify>
         <div class="ui segment">
             <div class="ui two column stackable grid">
                 <div class="eight wide column">
@@ -196,7 +197,8 @@
                 this.setMessage(this.newMessage);
             },
             editTranslationMessage: function (fullMessageId, message, event) {
-                console.log(event.target);
+                /** can be input and icon */
+                // console.log(event.target);
                 this.setMessage({
                     domain: this.filter.domain,
                     id: fullMessageId,
@@ -204,7 +206,9 @@
                 });
             },
             setMessage: function (messageData) {
-                this.$store.dispatch('setMessage', messageData).then(result => {
+                const message = Object.assign({}, messageData);
+                message.localeCode = this.selectedLocale;
+                this.$store.dispatch('setMessage', message).then(result => {
                     if (result.status === 'success') {
                         this.$snotify.success(result.message);
                     } else if (result.status === 'error') {
