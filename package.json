@@ -1,0 +1,38 @@
+{
+  "name": "yaroslavche-sylius-translation-plugin",
+  "version": "0.3.0",
+  "description": "YaroslavcheSyliusTranslationPlugin Vue frontend",
+  "main": "webpack.config.js",
+  "devDependencies": {
+    "@babel/core": "^7.4.3",
+    "axios": "^0.18.0",
+    "babel-loader": "^8.0.5",
+    "cross-env": "^5.2.0",
+    "css-loader": "^2.1.1",
+    "regenerator-runtime": "^0.13.2",
+    "vue": "^2.6.10",
+    "vue-loader": "^15.7.0",
+    "vue-snotify": "^3.2.1",
+    "vue-style-loader": "^4.1.2",
+    "vue-template-compiler": "^2.6.10",
+    "vuex": "^3.1.0",
+    "webpack": "^4.30.0",
+    "webpack-cli": "^3.3.0",
+    "webpack-dev-server": "^3.3.1"
+  },
+  "scripts": {
+    "dev": "webpack-dev-server --mode development",
+    "prod": "webpack --mode production",
+    "build": "cross-env NODE_ENV=production webpack --progress --hide-modules"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yaroslavche/sylius-translation-plugin.git"
+  },
+  "author": "yaroslavche",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/yaroslavche/sylius-translation-plugin/issues"
+  },
+  "homepage": "https://github.com/yaroslavche/sylius-translation-plugin#readme"
+}
