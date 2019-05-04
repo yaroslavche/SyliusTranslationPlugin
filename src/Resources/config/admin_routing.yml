@@ -4,32 +4,32 @@ yaroslavche_sylius_translation_plugin_dashboard:
   controller: Yaroslavche\SyliusTranslationPlugin\Controller\TranslationController::dashboard
 
 # ajax
+yaroslavche_sylius_translation_plugin_fetch_locales_data:
+  path:     /admin/translation/fetchLocalesData
+  methods: ['GET']
+  controller: Yaroslavche\SyliusTranslationPlugin\Controller\TranslationController::fetchLocalesData
+
+yaroslavche_sylius_translation_plugin_fetch_full_message_catalogue:
+  path:     /admin/translation/fetchFullMessageCatalogue
+  methods: ['GET'] # need OPTIONS and E-Tag?
+  controller: Yaroslavche\SyliusTranslationPlugin\Controller\TranslationController::fetchFullMessageCatalogue
+
+yaroslavche_sylius_translation_plugin_fetch_locale_message_catalogues:
+  path:     /admin/translation/fetchLocaleMessageCatalogues
+  methods: ['POST']
+  controller: Yaroslavche\SyliusTranslationPlugin\Controller\TranslationController::fetchLocaleMessageCatalogues
+
 yaroslavche_sylius_translation_plugin_set_message:
   path:     /admin/translation/setMessage
   methods: ['POST']
   controller: Yaroslavche\SyliusTranslationPlugin\Controller\TranslationController::setMessage
 
-yaroslavche_sylius_translation_plugin_get_locales:
-  path:     /admin/translation/getLocales
-  methods: ['GET']
-  controller: Yaroslavche\SyliusTranslationPlugin\Controller\TranslationController::getLocales
-
-yaroslavche_sylius_translation_plugin_get_message_catalogue:
-  path:     /admin/translation/getMessageCatalogue
-  methods: ['POST']
-  controller: Yaroslavche\SyliusTranslationPlugin\Controller\TranslationController::getMessageCatalogue
-
 yaroslavche_sylius_translation_plugin_add_locale:
-    path:     /admin/translation/addLocale
-    methods: ['POST']
-    controller: Yaroslavche\SyliusTranslationPlugin\Controller\TranslationController::addLocale
+  path:     /admin/translation/addLocale
+  methods: ['POST']
+  controller: Yaroslavche\SyliusTranslationPlugin\Controller\TranslationController::addLocale
 
 yaroslavche_sylius_translation_plugin_remove_locale:
-    path:     /admin/translation/removeLocale
-    methods: ['POST']
-    controller: Yaroslavche\SyliusTranslationPlugin\Controller\TranslationController::removeLocale
-
-yaroslavche_sylius_translation_plugin_add_domain:
-  path:     /admin/translation/addDomain
+  path:     /admin/translation/removeLocale
   methods: ['POST']
-  controller: Yaroslavche\SyliusTranslationPlugin\Controller\TranslationController::addDomain
+  controller: Yaroslavche\SyliusTranslationPlugin\Controller\TranslationController::removeLocale

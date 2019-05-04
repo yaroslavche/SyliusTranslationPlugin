@@ -4,10 +4,10 @@
             <div class="column">
                 <div class="ui statistic">
                     <div class="value locale">
-                        <span v-show="localesLoader">
+                        <span v-show="availableLocalesLoader">
                         <div class="ui active inline loader"></div>
                     </span>
-                        {{ totalLocalesCount }}
+                        {{ totalAvailableLocalesCount }}
                     </div>
                     <div class="label">
                         Sylius available locales
@@ -69,22 +69,22 @@
         data() {
             return {
                 fullMessageCatalogueLoader: true,
-                localesLoader: true,
+                availableLocalesLoader: true,
                 totalTranslationProgressPercentageLoader: true
             };
         },
         computed: {
             ...mapGetters([
-                'locales',
+                'availableLocales',
                 'fullMessageCatalogue',
                 'totalMessagesCount',
                 'messageCatalogues',
             ]),
-            totalLocalesCount: function () {
-                if (Object.entries(this.locales).length === 0) {
+            totalAvailableLocalesCount: function () {
+                if (Object.entries(this.availableLocales).length === 0) {
                     return '';
                 }
-                return Object.keys(this.locales).length;
+                return Object.keys(this.availableLocales).length;
             },
             totalDomainsCount: function () {
                 if (Object.entries(this.fullMessageCatalogue).length === 0) {
@@ -95,22 +95,22 @@
             totalTranslationProgressPercentage: function () {
                 if (
                     Object.entries(this.fullMessageCatalogue).length === 0 ||
-                    Object.entries(this.locales).length === 0
+                    Object.entries(this.availableLocales).length === 0
                 ) {
                     return '';
                 }
                 let totalTranslatedMessages = 0;
-                let totalLocales = 0;
-                Object.keys(this.locales).forEach(localeCode => {
+                let totalAvailableLocales = 0;
+                Object.keys(this.availableLocales).forEach(localeCode => {
                     const localeCodeDomains = this.messageCatalogues[localeCode];
                     if (typeof localeCodeDomains !== 'undefined') {
-                        totalLocales++;
+                        totalAvailableLocales++;
                         Object.keys(localeCodeDomains).forEach(domain => {
                             totalTranslatedMessages += Object.keys(localeCodeDomains[domain]).length;
                         });
                     }
                 });
-                const totalPercentage = ((totalTranslatedMessages / (this.totalMessagesCount * totalLocales)) * 100).toFixed(2);
+                const totalPercentage = ((totalTranslatedMessages / (this.totalMessagesCount * totalAvailableLocales)) * 100).toFixed(2);
                 if (isNaN(parseInt(totalPercentage))) {
                     return '';
                 }
@@ -123,8 +123,8 @@
             fullMessageCatalogue() {
                 this.fullMessageCatalogueLoader = false;
             },
-            locales() {
-                this.localesLoader = false;
+            availableLocales() {
+                this.availableLocalesLoader = false;
             }
         }
     }

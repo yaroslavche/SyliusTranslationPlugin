@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Yaroslavche\SyliusTranslationPlugin\Controller;
 
 use Exception;
+use Psr\Cache\InvalidArgumentException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\Intl\Intl;
 use Yaroslavche\SyliusTranslationPlugin\Service\TranslationService;
 
 use function Safe\sprintf;
@@ -31,11 +31,6 @@ final class TranslationController extends AbstractController
     }
 
     /**
-     * Frontend
-     * how to inject into locales? Like list on edit page and statistics on locales index
-     */
-
-    /**
      * @return Response
      */
     public function dashboard(): Response
@@ -48,15 +43,13 @@ final class TranslationController extends AbstractController
     /**
      * @return JsonResponse
      */
-    public function getLocales(): JsonResponse
+    public function fetchLocalesData(): JsonResponse
     {
-        $supportedLocales = Intl::getLocaleBundle()->getLocaleNames($this->translationService->getDefaultLocale());
         return $this->json([
             'status' => 'success',
-            'locales' => $this->translationService->getLocales(),
-            'supportedLocales' => $supportedLocales,
-            /** @todo */
-            'defaultLocale' => 'en_US'
+            'defaultLocaleCode' => $this->translationService->getDefaultLocaleCode(),
+            'availableLocales' => $this->translationService->getAvailableLocales(),
+            'supportedLocales' => $this->translationService->getSupportedLocales()
         ]);
     }
 
@@ -64,19 +57,38 @@ final class TranslationController extends AbstractController
      * @param Request $request
      * @return JsonResponse
      */
-    public function getMessageCatalogue(Request $request): JsonResponse
+    public function fetchFullMessageCatalogue(Request $request): JsonResponse
     {
-        $requestLocaleCode = $request->request->get('localeCode');
-        $messageCatalogue = $this->translationService->getMessageCatalogue($requestLocaleCode);
-        $customMessageCatalogue = $this->translationService->getCustomMessageCatalogue($requestLocaleCode);
-
-        if (null === $messageCatalogue) {
-            return $this->json(['status' => 'error', 'message' => 'get_message_catalogue_failed']);
+        try {
+            $full = $this->translationService->getFullMessageCatalogue();
+            return $this->json([
+                'status' => 'success',
+                'full' => $full->all()
+            ]);
+        } catch (InvalidArgumentException $exception) {
+            return $this->json(['status' => 'error', 'message' => $exception->getMessage()]);
         }
+    }
+
+    /**
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function fetchLocaleMessageCatalogues(Request $request): JsonResponse
+    {
+        $localeCode = $request->request->get('localeCode');
+        $localeCode = $localeCode === 'en_US' ? 'en' : $localeCode;
+        try {
+            $translated = $this->translationService->getTranslatedMessageCatalogue($localeCode);
+            $custom = $this->translationService->getCustomMessageCatalogue($localeCode);
+        } catch (Exception $exception) {
+            return $this->json(['status' => 'error', 'message' => $exception->getMessage()]);
+        }
+
         return $this->json([
             'status' => 'success',
-            'messageCatalogue' => $messageCatalogue->all(),
-            'customMessageCatalogue' => $customMessageCatalogue ? $customMessageCatalogue->all() : null
+            'translated' => $translated->all(),
+            'custom' => $custom->all()
         ]);
     }
 

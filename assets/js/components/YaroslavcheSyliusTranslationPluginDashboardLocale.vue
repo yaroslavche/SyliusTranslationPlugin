@@ -4,12 +4,14 @@
             <div class="column">
                 <div class="ui statistic">
                     <div class="value locale">
-                        <div class="ui right internal attached rail" v-show="Object.entries(locales).length > 1">
+                        <div class="ui right internal attached rail"
+                             v-show="Object.entries(availableLocales).length > 1 && defaultLocaleCode !== localeCode"
+                        >
                             <button class="ui icon button removeLocale" @click="removeLocale">
                                 <i class="trash icon"></i>
                             </button>
                         </div>
-                        <a class="link" @click="setSelectedLocale">{{ localeCode }}</a>
+                        <a class="link" @click="setSelectedLocaleCode">{{ localeCode }}</a>
                     </div>
                     <div class="label">
                         {{ localeLanguageName }}
@@ -83,16 +85,17 @@
         },
         computed: {
             ...mapGetters([
-                'locales',
+                'availableLocales',
                 'fullMessageCatalogue',
                 'totalMessagesCount',
                 'messageCatalogues',
-                'selectedLocale',
+                'selectedLocaleCode',
+                'defaultLocaleCode',
                 'selectedDomain',
             ]),
             localeLanguageName: {
                 get: function () {
-                    return this.locales[this.localeCode];
+                    return this.availableLocales[this.localeCode];
                 }
             },
             translatedMessagesCount: {
@@ -134,8 +137,8 @@
             }
         },
         methods: {
-            setSelectedLocale() {
-                this.$store.commit('setSelectedLocale', this.localeCode);
+            setSelectedLocaleCode() {
+                this.$store.commit('setSelectedLocaleCode', this.localeCode);
             },
             removeLocale() {
                 this.$store.dispatch('removeLocale', {localeCode: this.localeCode}).then(result => {

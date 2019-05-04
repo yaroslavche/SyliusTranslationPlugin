@@ -55,7 +55,7 @@
             return {
                 showTranslated: false,
                 showUntranslated: true,
-                showCustom: false,
+                showCustom: true,
                 domain: ''
             };
         },

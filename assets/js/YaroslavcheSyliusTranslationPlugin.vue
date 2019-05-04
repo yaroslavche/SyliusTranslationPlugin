@@ -12,11 +12,11 @@
                 </h1>
             </div>
         </div>
-        <div v-show="selectedLocale.length === 0">
+        <div v-show="selectedLocaleCode.length === 0">
             <YaroslavcheSyliusTranslationPluginDashboardTotal></YaroslavcheSyliusTranslationPluginDashboardTotal>
-            <div v-show="Object.keys(locales).length > 0">
+            <div v-show="Object.keys(availableLocales).length > 0">
                 <YaroslavcheSyliusTranslationPluginDashboardLocale
-                        v-for="(languageName, localeCode) in locales"
+                        v-for="(languageName, localeCode) in availableLocales"
                         :localeCode="localeCode"
                         :key="localeCode"
                 >
@@ -38,16 +38,18 @@
                     </div>
                 </div>
                 <input type="hidden" ref="newLocaleCode">
-                <button class="ui primary button" @click="addLocale">Add</button>
+                <button class="ui primary button" @click="addLocale" v-show="selectedNewLocale.length > 0">
+                    Add
+                </button>
             </div>
         </div>
-        <div v-show="selectedLocale.length > 0">
+        <div v-show="selectedLocaleCode.length > 0">
             <div class="ui two column stackable grid">
                 <div class="four wide column">
                     <div class="ui segment">
                         <div class="ui two column stackable grid">
                             <div class="ten wide column">
-                                <button class="ui blue inverted button tiny" @click="setSelectedLocale('')">
+                                <button class="ui blue inverted button tiny" @click="setSelectedLocaleCode('')">
                                     <i class="angle left icon"></i>
                                     Dashboard
                                 </button>
@@ -90,23 +92,24 @@
         },
         computed: {
             ...mapGetters([
-                'locales',
+                'availableLocales',
                 'fullMessageCatalogue',
                 'totalMessagesCount',
                 'messageCatalogues',
-                'selectedLocale',
+                'selectedLocaleCode',
                 'supportedLocales',
-                'defaultLocale'
+                'defaultLocaleCode'
             ])
         },
         methods: {
-            setSelectedLocale(localeCode) {
-                this.$store.commit('setSelectedLocale', localeCode);
+            setSelectedLocaleCode(localeCode) {
+                this.$store.commit('setSelectedLocaleCode', localeCode);
             },
             addLocale() {
                 const payload = {localeCode: this.selectedNewLocale};
                 this.$store.dispatch('addLocale', payload).then(result => {
                     if (result.status === 'success') {
+                        this.selectedNewLocale = '';
                         this.$snotify.success(result.message);
                     } else if (result.status === 'error') {
                         this.$snotify.error(result.message);
@@ -117,14 +120,14 @@
             }
         },
         created() {
-            this.$store.dispatch('fetchLocales').then(result => {
+            this.$store.dispatch('fetchLocalesData').then(result => {
                 if (result.status === 'error') {
                     this.$snotify.error(result.message);
                 }
             }, error => {
                 this.$snotify.error(error.message);
             });
-            this.$store.dispatch('fetchMessageCatalogue').then(result => {
+            this.$store.dispatch('fetchFullMessageCatalogue').then(result => {
                 if (result.status === 'error') {
                     this.$snotify.error(result.message);
                 }

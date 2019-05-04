@@ -75,7 +75,7 @@
                         </div>
                     </div>
                 </div>
-                domain for "{{ selectedLocale }}" locale
+                domain for "{{ selectedLocaleCode }}" locale
             </div>
             <div class="content">
                 <div class="ui center aligned grid">
@@ -119,11 +119,7 @@
         data() {
             return {
                 idMaxLength: 40,
-                newMessage: {
-                    domain: 'messages',
-                    id: null,
-                    message: null
-                },
+                newMessage: {},
                 filterIdValue: ''
             };
         },
@@ -134,30 +130,30 @@
                 'messageCatalogues',
                 'customMessageCatalogues',
                 'filter',
-                'selectedLocale'
+                'selectedLocaleCode'
             ]),
             messages: {
                 get: function () {
                     let messages = {};
-                    const domain = this.filter.domain;
-                    if (!this.filter.showTranslated && !this.filter.showUntranslated && !this.filter.showCustom) return messages;
+                    const domain = this.filter.domain || 'messages';
+                    if (!this.filter.showTranslated && !this.filter.showUntranslated) return messages;
                     if (typeof this.fullMessageCatalogue[domain] === 'undefined') return;
                     Object.keys(this.fullMessageCatalogue[domain]).forEach(id => {
                         if (this.filterIdValue.length > 0 && !id.toLowerCase().includes(this.filterIdValue.toLowerCase())) return;
 
                         let translatedMessage = null;
                         let customMessage = null;
-                        if (this.messageCatalogues[this.selectedLocale]) {
-                            if (this.messageCatalogues[this.selectedLocale][domain]) {
-                                if (this.messageCatalogues[this.selectedLocale][domain][id]) {
-                                    translatedMessage = this.messageCatalogues[this.selectedLocale][domain][id];
+                        if (this.messageCatalogues[this.selectedLocaleCode]) {
+                            if (this.messageCatalogues[this.selectedLocaleCode][domain]) {
+                                if (this.messageCatalogues[this.selectedLocaleCode][domain][id]) {
+                                    translatedMessage = this.messageCatalogues[this.selectedLocaleCode][domain][id];
                                 }
                             }
                         }
-                        if (this.customMessageCatalogues[this.selectedLocale]) {
-                            if (this.customMessageCatalogues[this.selectedLocale][domain]) {
-                                if (this.customMessageCatalogues[this.selectedLocale][domain][id]) {
-                                    translatedMessage = customMessage = this.customMessageCatalogues[this.selectedLocale][domain][id];
+                        if (this.customMessageCatalogues[this.selectedLocaleCode]) {
+                            if (this.customMessageCatalogues[this.selectedLocaleCode][domain]) {
+                                if (this.customMessageCatalogues[this.selectedLocaleCode][domain][id]) {
+                                    translatedMessage = customMessage = this.customMessageCatalogues[this.selectedLocaleCode][domain][id];
                                 }
                             }
                         }
@@ -194,20 +190,26 @@
                 return {}
             },
             addTranslationMessage: function () {
-                this.setMessage(this.newMessage);
+                this.setMessage({
+                    type: 'customMessageCatalogues',
+                    localeCode: this.selectedLocaleCode,
+                    domain: this.newMessage.domain,
+                    id: this.newMessage.id,
+                    message: this.newMessage.message
+                });
             },
             editTranslationMessage: function (fullMessageId, message, event) {
                 /** can be input and icon */
                 // console.log(event.target);
                 this.setMessage({
+                    type: 'customMessageCatalogues',
+                    localeCode: this.selectedLocaleCode,
                     domain: this.filter.domain,
                     id: fullMessageId,
                     message: message.translatedMessage
                 });
             },
-            setMessage: function (messageData) {
-                const message = Object.assign({}, messageData);
-                message.localeCode = this.selectedLocale;
+            setMessage: function (message) {
                 this.$store.dispatch('setMessage', message).then(result => {
                     if (result.status === 'success') {
                         this.$snotify.success(result.message);
