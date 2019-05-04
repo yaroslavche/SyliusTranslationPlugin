@@ -166,6 +166,9 @@ export const store = new Vuex.Store({
                 axios.post('/admin/translation/setMessage', payload).then(response => {
                     if (response.data.status === 'success') {
                         context.dispatch('setMessageUpdateStore', payload);
+                        if (response.data.reloadFullCatalogue === true) {
+                            context.dispatch('fetchFullMessageCatalogue');
+                        }
                     }
                     resolve(response.data);
                 }, error => {

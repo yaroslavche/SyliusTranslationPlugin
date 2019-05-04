@@ -104,14 +104,16 @@ final class TranslationController extends AbstractController
         $message = $request->request->get('message', '');
 
         try {
-            $this->translationService->setMessage($localeCode, $domain, $id, $message ?? '');
+            $reloadFullCatalogue = $this->translationService->setMessage($localeCode, $domain, $id, $message ?? '');
         } catch (Exception $exception) {
             return $this->json(['status' => 'error', 'message' => $exception->getMessage()]);
+        } catch (InvalidArgumentException $exception) {
+            return $this->json(['status' => 'error', 'message' => $exception->getMessage()]);
         }
-
         return $this->json([
             'status' => 'success',
-            'message' => 'Message successfully updated.'
+            'message' => 'Message successfully updated.',
+            'reloadFullCatalogue' => $reloadFullCatalogue
         ]);
     }
 

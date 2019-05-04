@@ -117,12 +117,17 @@ class TranslationService
     }
 
     /**
+     * @param bool $forceRevalidate
      * @return MessageCatalogue
      * @throws InvalidArgumentException
      */
-    public function getFullMessageCatalogue(): MessageCatalogue
+    public function getFullMessageCatalogue(bool $forceRevalidate = false): MessageCatalogue
     {
         $locales = Intl::getLocaleBundle()->getLocales();
+
+        if ($forceRevalidate) {
+            $this->cache->delete(static::FULL_MESSAGE_CATALOGUE_CACHE_KEY);
+        }
 
         /** @var MessageCatalogue $catalogue */
         $catalogue = $this->cache->get(
@@ -235,6 +240,7 @@ class TranslationService
      * @param string $message
      * @return bool
      * @throws StringsException
+     * @throws InvalidArgumentException
      */
     public function setMessage(string $localeCode, string $domain, string $id, string $message): bool
     {
@@ -254,8 +260,14 @@ class TranslationService
             ]];
         }
         $messageCatalogue->setMetadata($id, $metadata, $domain);
-        /** @todo if message not in full - regenerate full catalogue cache */
-        return $this->save($messageCatalogue);
+        $this->save($messageCatalogue);
+
+        $fullMessageCatalogue = $this->getFullMessageCatalogue();
+        $revalidateCache = !$fullMessageCatalogue->has($id, $domain);
+        if ($revalidateCache) {
+            $this->getFullMessageCatalogue(true);
+        }
+        return $revalidateCache;
     }
 
     public function save(MessageCatalogue $messageCatalogue, string $format = 'xliff'): bool
