@@ -14,7 +14,7 @@ services:
       $translator: '@translator'
       $localeRepository: '@sylius.repository.locale'
       $localeProvider: '@sylius.locale_provider'
-      $kernelRootDir: '%kernel.root_dir%'
+      $kernelRootDir: '%kernel.project_dir%'
 
   Yaroslavche\SyliusTranslationPlugin\Service\TranslationService: '@yaroslavche_sylius_translation_plugin_translation_service'
 
