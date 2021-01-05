@@ -5,7 +5,7 @@
   "main": "webpack.config.js",
   "devDependencies": {
     "@babel/core": "^7.4.3",
-    "axios": "^0.18.0",
+    "axios": "^0.21.1",
     "babel-loader": "^8.0.5",
     "cross-env": "^5.2.0",
     "css-loader": "^2.1.1",
